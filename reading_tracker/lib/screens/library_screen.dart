@@ -4,39 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/book.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
-import '../widgets/book_tile.dart';
+import '../widgets/cover_card.dart';
 import 'add_book_screen.dart';
 import 'book_detail_screen.dart';
 import 'paywall_screen.dart';
+import 'shelf_list_screen.dart';
 import 'stats_screen.dart';
 
-class LibraryScreen extends ConsumerStatefulWidget {
+class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 
-  @override
-  ConsumerState<LibraryScreen> createState() => _LibraryScreenState();
-}
-
-class _LibraryScreenState extends ConsumerState<LibraryScreen> with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
-
-  static const _tabs = [
+  static const _shelves = [
     ('Reading', ReadingStatus.reading),
     ('Want to Read', ReadingStatus.wantToRead),
     ('Finished', ReadingStatus.finished),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -46,7 +28,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with SingleTicker
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final booksAsync = ref.watch(booksProvider);
     final isPremiumAsync = ref.watch(isPremiumProvider);
     final isPremium = isPremiumAsync.valueOrNull ?? false;
@@ -76,65 +58,59 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with SingleTicker
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _greeting(),
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: AppColors.ink,
+      body: booksAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text('Something went wrong: $err')),
+        data: (books) {
+          return ListView(
+            padding: const EdgeInsets.only(bottom: 100),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _greeting(),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      readingCount == 0
+                          ? 'Ready to start something new?'
+                          : "You're reading $readingCount book${readingCount == 1 ? '' : 's'} right now",
+                      style: const TextStyle(color: AppColors.inkMuted, fontSize: 14.5),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              if (!isPremium)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _PremiumBanner(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const PaywallScreen()),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  readingCount == 0
-                      ? 'Ready to start something new?'
-                      : "You're reading $readingCount book${readingCount == 1 ? '' : 's'} right now",
-                  style: const TextStyle(color: AppColors.inkMuted, fontSize: 14.5),
+              if (!isPremium) const SizedBox(height: 26),
+              for (final shelf in _shelves) ...[
+                _ShelfSection(
+                  title: shelf.$1,
+                  status: shelf.$2,
+                  books: books.where((b) => b.status == shelf.$2).toList(),
                 ),
-                const SizedBox(height: 18),
-                _PillTabBar(controller: _tabController, tabs: _tabs.map((t) => t.$1).toList()),
+                const SizedBox(height: 26),
               ],
-            ),
-          ),
-          Expanded(
-            child: booksAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Something went wrong: $err')),
-              data: (books) {
-                return TabBarView(
-                  controller: _tabController,
-                  children: _tabs.map((t) {
-                    final filtered = books.where((b) => b.status == t.$2).toList();
-                    if (filtered.isEmpty) {
-                      return _EmptyState(status: t.$2);
-                    }
-                    return ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final book = filtered[index];
-                        return BookTile(
-                          book: book,
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => BookDetailScreen(bookId: book.id)),
-                          ),
-                        );
-                      },
-                    );
-                  }).toList(),
-                );
-              },
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(
@@ -143,6 +119,159 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> with SingleTicker
         icon: const Icon(Icons.add_rounded),
         label: const Text('Add book'),
       ),
+    );
+  }
+}
+
+class _PremiumBanner extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PremiumBanner({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.yellowPale.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Unlock Premium',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.ink),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Unlimited notes, pace insights\n& reading trends',
+                      style: TextStyle(color: AppColors.inkMuted, fontSize: 13, height: 1.3),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.ink,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Upgrade now',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 12.5),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 14),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(color: AppColors.yellowDeep, shape: BoxShape.circle),
+                child: const Icon(Icons.auto_awesome_rounded, color: AppColors.ink, size: 30),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShelfSection extends StatelessWidget {
+  final String title;
+  final ReadingStatus status;
+  final List<Book> books;
+
+  const _ShelfSection({required this.title, required this.status, required this.books});
+
+  @override
+  Widget build(BuildContext context) {
+    // Hide empty non-primary shelves so the home screen stays tidy; the
+    // "Reading" shelf always shows so there's a clear place to start.
+    if (books.isEmpty && status != ReadingStatus.reading) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                  if (books.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      '${books.length} book${books.length == 1 ? '' : 's'}',
+                      style: const TextStyle(color: AppColors.inkMuted, fontSize: 12.5),
+                    ),
+                  ],
+                ],
+              ),
+              if (books.isNotEmpty)
+                GestureDetector(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => ShelfListScreen(status: status, title: title)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'See all',
+                        style: TextStyle(color: AppColors.coral, fontWeight: FontWeight.w700, fontSize: 13),
+                      ),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.coral, size: 18),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (books.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              "You're not reading anything yet — add a book to get started.",
+              style: const TextStyle(color: AppColors.inkMuted, fontSize: 13.5),
+            ),
+          )
+        else
+          SizedBox(
+            height: 236,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: books.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 14),
+              itemBuilder: (context, index) {
+                final book = books[index];
+                return CoverCard(
+                  book: book,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => BookDetailScreen(bookId: book.id)),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 }
@@ -173,71 +302,6 @@ class _AppBarIconButton extends StatelessWidget {
           shape: const CircleBorder(),
         ),
         icon: Icon(icon),
-      ),
-    );
-  }
-}
-
-class _PillTabBar extends StatelessWidget {
-  final TabController controller;
-  final List<String> tabs;
-  const _PillTabBar({required this.controller, required this.tabs});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.creamCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.hairline),
-      ),
-      child: TabBar(
-        controller: controller,
-        tabs: tabs.map((t) => Tab(text: t)).toList(),
-        dividerColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: AppColors.yellowDeep,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        labelColor: AppColors.ink,
-        unselectedLabelColor: AppColors.inkMuted,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-        splashBorderRadius: BorderRadius.circular(12),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final ReadingStatus status;
-  const _EmptyState({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final (message, emoji) = switch (status) {
-      ReadingStatus.reading => ("You're not reading anything yet.\nAdd a book to get started.", '📖'),
-      ReadingStatus.wantToRead => ('Nothing on your want-to-read shelf yet.', '📝'),
-      ReadingStatus.finished => ('No finished books yet — keep going!', '🎉'),
-      ReadingStatus.dnf => ('Nothing here.', '📚'),
-    };
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 40)),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.inkMuted, fontSize: 15),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../models/book.dart';
 import '../models/note.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_theme.dart';
+import '../widgets/book_cover_art.dart';
 import 'paywall_screen.dart';
 
 /// Free tier caps notes/quotes per book; premium unlocks unlimited notes.
@@ -156,15 +157,7 @@ class _BookDetailBodyState extends ConsumerState<_BookDetailBody> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 72,
-                  height: 104,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(Icons.menu_book_rounded, size: 30, color: accent),
-                ),
+                BookCoverArt(book: book, width: 72, height: 104, radius: 14),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

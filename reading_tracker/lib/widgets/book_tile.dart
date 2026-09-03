@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/book.dart';
 import '../theme/app_theme.dart';
+import 'book_cover_art.dart';
 
 class BookTile extends StatelessWidget {
   final Book book;
@@ -11,7 +12,6 @@ class BookTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = AppColors.coverColorFor(book.id);
     final statusColor = AppColors.statusColor(book.status);
 
     return Padding(
@@ -31,7 +31,7 @@ class BookTile extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Cover(url: book.coverUrl, accent: accent),
+                BookCoverArt(book: book, width: 60, height: 86, radius: 12),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -102,47 +102,6 @@ class _StatusChip extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-}
-
-class _Cover extends StatelessWidget {
-  final String? url;
-  final Color accent;
-  const _Cover({this.url, required this.accent});
-
-  @override
-  Widget build(BuildContext context) {
-    const width = 56.0;
-    const height = 80.0;
-    if (url == null || url!.isEmpty) {
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(Icons.menu_book_rounded, size: 24, color: accent),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        url!,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        errorBuilder: (imgContext, error, stackTrace) => Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            color: accent.withValues(alpha: 0.18),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.menu_book_rounded, size: 24, color: accent),
-        ),
       ),
     );
   }

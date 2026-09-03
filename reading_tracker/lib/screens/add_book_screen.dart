@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/book.dart';
 import '../providers/app_providers.dart';
 import '../services/book_search_service.dart';
+import '../theme/app_theme.dart';
 
 class AddBookScreen extends ConsumerStatefulWidget {
   const AddBookScreen({super.key});
@@ -83,48 +84,128 @@ class _AddBookScreenState extends ConsumerState<AddBookScreen> {
           ),
         ],
       ),
+      backgroundColor: AppColors.cream,
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Search by title or author',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.creamCard,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(color: AppColors.hairline),
               ),
-              onSubmitted: _search,
+              child: TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
+                  hintText: 'Search by title or author',
+                  hintStyle: TextStyle(color: AppColors.inkMuted),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.inkMuted),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+                onSubmitted: _search,
+              ),
             ),
           ),
           if (_loading) const LinearProgressIndicator(),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              child: Text(_error!, style: const TextStyle(color: AppColors.coral)),
             ),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: _results.length,
               itemBuilder: (context, index) {
                 final result = _results[index];
-                return ListTile(
-                  leading: result.coverUrl != null
-                      ? Image.network(result.coverUrl!, width: 40, fit: BoxFit.cover)
-                      : const Icon(Icons.menu_book),
-                  title: Text(result.title, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(result.author),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.add_circle_outline),
-                    onPressed: () => _addBook(result),
-                  ),
-                  onTap: () => _addBook(result),
-                );
+                return _SearchResultTile(result: result, onAdd: () => _addBook(result));
               },
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SearchResultTile extends StatelessWidget {
+  final BookSearchResult result;
+  final VoidCallback onAdd;
+  const _SearchResultTile({required this.result, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = AppColors.coverColorFor(result.title);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Material(
+        color: AppColors.creamCard,
+        borderRadius: BorderRadius.circular(18),
+        child: InkWell(
+          onTap: onAdd,
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: AppColors.hairline),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: result.coverUrl != null
+                      ? Image.network(
+                          result.coverUrl!,
+                          width: 42,
+                          height: 60,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _placeholder(accent),
+                        )
+                      : _placeholder(accent),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        result.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        result.author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: AppColors.inkMuted, fontSize: 12.5),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_rounded),
+                  color: AppColors.yellowDeeper,
+                  onPressed: onAdd,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder(Color accent) {
+    return Container(
+      width: 42,
+      height: 60,
+      color: accent.withValues(alpha: 0.18),
+      child: Icon(Icons.menu_book_rounded, size: 18, color: accent),
     );
   }
 }
