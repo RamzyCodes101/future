@@ -1,0 +1,1017 @@
+<title>Pages</title>
+<meta name="description" content="A reading tracker: shelves, progress, notes, and a reading goal.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Work+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --cream: #FFF8EA;
+    --cream-card: #FFFDF7;
+    --ink: #2B2013;
+    --ink-muted: #8A7A63;
+    --hairline: #EDE1C8;
+    --yellow-pale: #FAED8F;
+    --yellow-deep: #F4B740;
+    --yellow-deeper: #E8A422;
+    --coral: #EF7B57;
+    --periwinkle: #7C93D6;
+    --sage: #6E9B6B;
+    --plum: #A787C4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root { min-height: 100%; }
+
+  h1, h2, h3, .display {
+    font-family: 'Manrope', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  input, textarea {
+    font-family: inherit;
+    font-size: 15px;
+  }
+
+  ::selection { background: var(--yellow-deep); color: var(--ink); }
+
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--cream);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* App bar */
+  .appbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 8px;
+  }
+
+  .appbar .back {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin: -8px;
+    color: var(--ink);
+    display: flex;
+  }
+
+  .appbar .title {
+    font-size: 20px;
+  }
+
+  .appbar .actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Home hero */
+  .hero {
+    padding: 4px 20px 4px;
+  }
+
+  .hero h1 { font-size: 27px; }
+
+  .hero .lede {
+    color: var(--ink-muted);
+    font-size: 14.5px;
+    margin-top: 4px;
+  }
+
+  /* Premium banner */
+  .premium-banner {
+    margin: 18px 20px 0;
+    background: rgba(250, 237, 143, 0.55);
+    border-radius: 22px;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    border: none;
+    text-align: left;
+    width: calc(100% - 40px);
+  }
+
+  .premium-banner .copy { flex: 1; }
+  .premium-banner .copy h3 { font-size: 17px; }
+  .premium-banner .copy p {
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1.35;
+    margin: 4px 0 12px;
+  }
+  .premium-banner .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 12.5px;
+  }
+  .premium-banner .badge {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--yellow-deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Shelves */
+  .shelf { margin-top: 26px; }
+  .shelf-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  .shelf-head .name { font-size: 17px; font-weight: 800; font-family: 'Manrope', sans-serif; }
+  .shelf-head .count { color: var(--ink-muted); font-size: 12.5px; margin-left: 8px; }
+  .shelf-head .see-all {
+    background: none; border: none; color: var(--coral); font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; gap: 2px;
+  }
+  .shelf-empty {
+    padding: 0 20px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  .shelf-row {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 12px 20px 6px;
+    scroll-snap-type: x proximity;
+  }
+  .shelf-row::-webkit-scrollbar { height: 6px; }
+  .shelf-row::-webkit-scrollbar-thumb { background: var(--hairline); border-radius: 6px; }
+
+  .cover-card {
+    flex: 0 0 auto;
+    width: 118px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 0;
+    scroll-snap-align: start;
+  }
+  .cover-art {
+    width: 118px;
+    height: 168px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover-art .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: rgba(0,0,0,0.12); }
+  .cover-card .ctitle {
+    font-size: 12.5px; font-weight: 700; margin-top: 8px; line-height: 1.2;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .cover-card .cauthor { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .cover-card .cprogress {
+    height: 4px; background: var(--hairline); border-radius: 4px; margin-top: 6px; overflow: hidden;
+  }
+  .cover-card .cprogress .fill { height: 100%; background: var(--coral); }
+
+  /* List tile (shelf detail) */
+  .tile {
+    display: flex;
+    gap: 14px;
+    margin: 0 16px 12px;
+    padding: 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 20px;
+    background: var(--cream-card);
+    text-align: left;
+    align-items: flex-start;
+  }
+  .tile-cover { width: 60px; height: 86px; border-radius: 12px; flex-shrink: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .tile-body { flex: 1; min-width: 0; }
+  .tile-title { font-weight: 700; font-size: 16px; line-height: 1.2; }
+  .tile-author { color: var(--ink-muted); font-size: 13.5px; margin-top: 3px; }
+  .tile-progress { height: 7px; background: var(--hairline); border-radius: 8px; margin-top: 10px; overflow: hidden; }
+  .tile-progress .fill { height: 100%; }
+  .tile-pages { font-size: 12px; color: var(--ink-muted); font-weight: 600; margin-top: 6px; }
+
+  .chip {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: var(--yellow-deep);
+    color: var(--ink);
+    border: none;
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .btn-outline {
+    background: none;
+    border: 1px solid var(--hairline);
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 12px 18px;
+    font-weight: 600;
+  }
+  .btn-text { background: none; border: none; color: var(--coral); font-weight: 700; }
+
+  .fab {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(calc(-50% + 130px));
+    background: var(--yellow-deep);
+    color: var(--ink);
+    border: none;
+    border-radius: 28px;
+    padding: 15px 22px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 10px 24px -8px rgba(43,32,19,0.35);
+  }
+  @media (max-width: 480px) {
+    .fab { transform: none; right: 20px; left: auto; }
+  }
+
+  .field {
+    width: 100%;
+    border: 1px solid var(--hairline);
+    background: var(--cream-card);
+    border-radius: 14px;
+    padding: 13px 16px;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .field:focus { outline: 2px solid var(--yellow-deeper); outline-offset: -1px; }
+
+  .screen-pad { padding: 4px 20px 100px; }
+
+  .status-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .status-pill {
+    padding: 9px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+  }
+
+  .stars { display: flex; gap: 2px; }
+  .stars button { background: none; border: none; padding: 2px; display: flex; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .stat-tile {
+    border-radius: 20px;
+    padding: 18px;
+  }
+  .stat-tile .value { font-size: 26px; font-weight: 800; font-family: 'Manrope', sans-serif; }
+  .stat-tile .label { font-weight: 700; font-size: 13px; margin-top: 2px; }
+  .stat-tile .sub { color: var(--ink-muted); font-size: 11.5px; }
+
+  .goal-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: rgba(250,237,143,0.55);
+    border: 1px solid var(--hairline);
+    border-radius: 24px;
+    padding: 20px;
+    margin-top: 14px;
+  }
+
+  .note-card {
+    background: rgba(250,237,143,0.4);
+    border-left: 4px solid var(--yellow-deeper);
+    border-radius: 16px;
+    padding: 14px;
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .note-card .text { flex: 1; font-size: 14px; line-height: 1.4; }
+  .note-card .page { color: var(--ink-muted); font-size: 11.5px; font-weight: 600; margin-top: 6px; }
+  .note-card button { background: none; border: none; color: var(--ink-muted); flex-shrink: 0; }
+
+  .empty-note {
+    color: var(--ink-muted);
+    font-size: 13.5px;
+    margin-top: 10px;
+  }
+
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(23,19,15,0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 20;
+  }
+  .sheet {
+    background: var(--cream);
+    width: 100%;
+    max-width: 480px;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 20px 28px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .sheet h3 { font-size: 19px; margin-bottom: 14px; }
+  .modal-center {
+    position: fixed; inset: 0; background: rgba(23,19,15,0.45);
+    display: flex; align-items: center; justify-content: center; z-index: 30; padding: 20px;
+  }
+  .modal-box {
+    background: var(--cream-card); border-radius: 20px; padding: 22px; max-width: 360px; width: 100%;
+  }
+  .modal-box h3 { font-size: 17px; margin-bottom: 8px; }
+  .modal-box p { color: var(--ink-muted); font-size: 14px; line-height: 1.4; margin-bottom: 18px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+  .feature-row { display: flex; align-items: center; gap: 14px; padding: 9px 0; }
+  .feature-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .empty-state { text-align: center; padding: 60px 32px; color: var(--ink-muted); }
+  .empty-state .emoji { font-size: 40px; }
+  .empty-state p { margin-top: 12px; font-size: 15px; }
+
+  .loading-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-muted); display: inline-block; }
+</style>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+/* ---------- theme ---------- */
+const COVER_PALETTE = ['#EF7B57', '#7C93D6', '#6E9B6B', '#E8A422', '#A787C4', '#5FA8A0'];
+const STATUS_COLOR = { reading: '#EF7B57', want_to_read: '#7C93D6', finished: '#6E9B6B', dnf: '#A787C4' };
+const STATUS_LABEL = { reading: 'Reading', want_to_read: 'Want to Read', finished: 'Finished', dnf: 'Did Not Finish' };
+
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
+  return Math.abs(h);
+}
+function coverColorFor(id) { return COVER_PALETTE[hashStr(id) % COVER_PALETTE.length]; }
+function darken(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, (n >> 16) - amt), g = Math.max(0, ((n >> 8) & 0xff) - amt), b = Math.max(0, (n & 0xff) - amt);
+  return `rgb(${r},${g},${b})`;
+}
+
+/* ---------- db hooks ---------- */
+function useDb() {
+  const [db, setDb] = useState(undefined); // undefined = loading, null = unavailable
+  useEffect(() => {
+    let cancelled = false;
+    if (!window.claude) { setDb(null); return; }
+    window.claude.use('db').then((d) => { if (!cancelled) setDb(d); });
+    return () => { cancelled = true; };
+  }, []);
+  return db;
+}
+
+function useCollection(db, path, build) {
+  const [state, setState] = useState({ docs: [], loading: true });
+  useEffect(() => {
+    if (db === undefined) return; // still resolving claude.use
+    if (db === null) { setState({ docs: [], loading: false }); return; }
+    let q = db.collection(path);
+    if (build) q = build(q);
+    const unsub = q.onSnapshot(
+      (snap) => setState({ docs: snap.docs.map((d) => ({ id: d.id, ...d.data() })), loading: false }),
+      () => setState({ docs: [], loading: false }),
+    );
+    return unsub;
+  }, [db, path]);
+  return state;
+}
+
+function useDoc(db, path) {
+  const [state, setState] = useState({ data: null, loading: true });
+  useEffect(() => {
+    if (db === undefined) return;
+    if (db === null) { setState({ data: null, loading: false }); return; }
+    const unsub = db.doc(path).onSnapshot(
+      (snap) => setState({ data: snap.exists ? snap.data() : null, loading: false }),
+      () => setState({ data: null, loading: false }),
+    );
+    return unsub;
+  }, [db, path]);
+  return state;
+}
+
+/* ---------- icons (small inline SVGs) ---------- */
+const Icon = {
+  back: (p) => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" {...p}><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  chart: (p) => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" {...p}><path d="M4 20V10M12 20V4M20 20v-7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>,
+  crown: (p) => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" {...p}><path d="M3 8l4 3 5-6 5 6 4-3-2 10H5L3 8z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></svg>,
+  plus: (p) => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/></svg>,
+  chevron: (p) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" {...p}><path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  book: (p) => <svg width="26" height="26" viewBox="0 0 24 24" fill="none" {...p}><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5c-.8 0-1.5-.7-1.5-1.5v-13zM20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5c.8 0 1.5-.7 1.5-1.5v-13z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>,
+  star: (p) => <svg width="24" height="24" viewBox="0 0 24 24" {...p}><path d="M12 2.5l2.9 6.3 6.9.7-5.2 4.7 1.5 6.8L12 17.6l-6.1 3.4 1.5-6.8-5.2-4.7 6.9-.7L12 2.5z" /></svg>,
+  close: (p) => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" {...p}><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>,
+  sparkle: (p) => <svg width="26" height="26" viewBox="0 0 24 24" fill="none" {...p}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>,
+  trash: (p) => <svg width="19" height="19" viewBox="0 0 24 24" fill="none" {...p}><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-8 0v12a1 1 0 001 1h6a1 1 0 001-1V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  notepad: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><path d="M5 4h11l3 3v13H5V4z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M9 11h6M9 15h4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>,
+  trend: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><path d="M3 16l6-6 4 4 8-9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  calendar: (p) => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" {...p}><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" strokeWidth="1.7"/><path d="M4 10h16M8 3v4M16 3v4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>,
+};
+
+/* ---------- shared bits ---------- */
+function Cover({ book, size }) {
+  const w = size === 'card' ? 118 : 60;
+  const h = size === 'card' ? 168 : 86;
+  const accent = coverColorFor(book.id);
+  return (
+    <div style={{ width: w, height: h, borderRadius: size === 'card' ? 16 : 12, position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${accent}, ${darken(accent, 40)})` }}>
+      <div className="spine" />
+      <Icon.book style={{ color: 'rgba(255,255,255,0.55)', width: w * 0.32, height: w * 0.32 }} />
+    </div>
+  );
+}
+
+function StatusChip({ status }) {
+  const color = STATUS_COLOR[status];
+  return <span className="chip" style={{ background: color + '26', color }}>{STATUS_LABEL[status]}</span>;
+}
+
+function ConfirmModal({ title, body, confirmLabel, onConfirm, onCancel }) {
+  return (
+    <div className="modal-center" onClick={onCancel}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <h3>{title}</h3>
+        <p>{body}</p>
+        <div className="modal-actions">
+          <button className="btn-text" onClick={onCancel}>Cancel</button>
+          <button className="btn-text" style={{ color: '#EF7B57' }} onClick={onConfirm}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Home ---------- */
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+const SHELVES = [
+  { key: 'reading', label: 'Reading' },
+  { key: 'want_to_read', label: 'Want to Read' },
+  { key: 'finished', label: 'Finished' },
+];
+
+function HomeScreen({ db, books, loading, onOpenBook, onOpenShelf, onAdd, onStats, onPremium }) {
+  const readingCount = books.filter((b) => b.status === 'reading').length;
+  return (
+    <div>
+      <div className="appbar">
+        <div className="title display">Pages</div>
+        <div className="actions">
+          <button className="icon-btn" style={{ background: '#E8A42226', color: '#E8A422' }} onClick={onPremium} title="Go Premium">
+            <Icon.crown />
+          </button>
+          <button className="icon-btn" style={{ background: '#EF7B5726', color: '#EF7B57' }} onClick={onStats} title="Stats">
+            <Icon.chart />
+          </button>
+        </div>
+      </div>
+
+      <div className="hero">
+        <h1>{greeting()}</h1>
+        <div className="lede">{readingCount === 0 ? 'Ready to start something new?' : `You're reading ${readingCount} book${readingCount === 1 ? '' : 's'} right now`}</div>
+      </div>
+
+      <button className="premium-banner" onClick={onPremium}>
+        <div className="copy">
+          <h3>Unlock Premium</h3>
+          <p>Unlimited notes, pace insights &amp; reading trends</p>
+          <span className="cta">Upgrade now <Icon.chevron style={{ color: '#fff' }} /></span>
+        </div>
+        <div className="badge"><Icon.sparkle style={{ color: '#2B2013' }} /></div>
+      </button>
+
+      {loading ? (
+        <div style={{ padding: '40px 20px', color: 'var(--ink-muted)' }}>Loading your library…</div>
+      ) : (
+        SHELVES.map((shelf) => {
+          const shelfBooks = books.filter((b) => b.status === shelf.key);
+          if (shelfBooks.length === 0 && shelf.key !== 'reading') return null;
+          return (
+            <div className="shelf" key={shelf.key}>
+              <div className="shelf-head">
+                <span>
+                  <span className="name">{shelf.label}</span>
+                  {shelfBooks.length > 0 && <span className="count">{shelfBooks.length} book{shelfBooks.length === 1 ? '' : 's'}</span>}
+                </span>
+                {shelfBooks.length > 0 && (
+                  <button className="see-all" onClick={() => onOpenShelf(shelf.key, shelf.label)}>See all <Icon.chevron /></button>
+                )}
+              </div>
+              {shelfBooks.length === 0 ? (
+                <div className="shelf-empty" style={{ marginTop: 10 }}>You're not reading anything yet — add a book to get started.</div>
+              ) : (
+                <div className="shelf-row">
+                  {shelfBooks.map((b) => (
+                    <button className="cover-card" key={b.id} onClick={() => onOpenBook(b.id)}>
+                      <Cover book={b} size="card" />
+                      <div className="ctitle">{b.title}</div>
+                      <div className="cauthor">{b.author}</div>
+                      {b.status === 'reading' && b.totalPages ? (
+                        <div className="cprogress"><div className="fill" style={{ width: `${Math.min(100, (b.currentPage / b.totalPages) * 100)}%`, background: '#EF7B57' }} /></div>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+
+      <button className="fab" onClick={onAdd}><Icon.plus /> Add book</button>
+    </div>
+  );
+}
+
+/* ---------- Shelf list (See all) ---------- */
+function ShelfListScreen({ label, books, onBack, onOpenBook }) {
+  return (
+    <div>
+      <div className="appbar">
+        <button className="back" onClick={onBack}><Icon.back /></button>
+        <div className="title display">{label}</div>
+        <div style={{ width: 24 }} />
+      </div>
+      <div style={{ paddingTop: 8 }}>
+        {books.length === 0 ? (
+          <div className="empty-state"><p>Nothing here yet.</p></div>
+        ) : books.map((b) => (
+          <button className="tile" key={b.id} onClick={() => onOpenBook(b.id)}>
+            <div className="tile-cover" style={{ background: `linear-gradient(135deg, ${coverColorFor(b.id)}, ${darken(coverColorFor(b.id), 40)})` }}>
+              <Icon.book style={{ color: 'rgba(255,255,255,0.55)', width: 22, height: 22 }} />
+            </div>
+            <div className="tile-body">
+              <div className="tile-title">{b.title}</div>
+              <div className="tile-author">{b.author}</div>
+              {b.status === 'reading' && b.totalPages ? (
+                <React.Fragment>
+                  <div className="tile-progress"><div className="fill" style={{ width: `${Math.min(100, (b.currentPage / b.totalPages) * 100)}%`, background: STATUS_COLOR.reading }} /></div>
+                  <div className="tile-pages">{b.currentPage}/{b.totalPages} pages</div>
+                </React.Fragment>
+              ) : (
+                <div style={{ marginTop: 8 }}><StatusChip status={b.status} /></div>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Add book ---------- */
+function AddBookScreen({ db, onBack }) {
+  const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('');
+  const [pages, setPages] = useState('');
+  const [status, setStatus] = useState('want_to_read');
+  const [saving, setSaving] = useState(false);
+
+  const canSave = title.trim() && author.trim();
+
+  const save = async () => {
+    if (!canSave || !db) return;
+    setSaving(true);
+    await db.collection('books').add({
+      title: title.trim(),
+      author: author.trim(),
+      totalPages: pages ? parseInt(pages, 10) : null,
+      currentPage: 0,
+      status,
+      rating: null,
+      addedAt: new Date().toISOString(),
+      startedAt: null,
+      finishedAt: null,
+    });
+    onBack();
+  };
+
+  return (
+    <div>
+      <div className="appbar">
+        <button className="back" onClick={onBack}><Icon.back /></button>
+        <div className="title display">Add a book</div>
+        <div style={{ width: 24 }} />
+      </div>
+      <div className="screen-pad">
+        <p style={{ color: 'var(--ink-muted)', fontSize: 13, marginTop: 4 }}>
+          Catalog search isn't available in this web preview — add books by hand.
+        </p>
+        <input className="field" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input className="field" placeholder="Author" value={author} onChange={(e) => setAuthor(e.target.value)} />
+        <input className="field" placeholder="Total pages (optional)" type="number" value={pages} onChange={(e) => setPages(e.target.value)} />
+        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>Shelf</div>
+        <div className="status-row" style={{ marginBottom: 20 }}>
+          {Object.keys(STATUS_LABEL).filter((s) => s !== 'dnf').map((s) => (
+            <button
+              key={s}
+              className="status-pill"
+              style={{ background: status === s ? STATUS_COLOR[s] : STATUS_COLOR[s] + '1F', color: status === s ? '#fff' : STATUS_COLOR[s] }}
+              onClick={() => setStatus(s)}
+            >{STATUS_LABEL[s]}</button>
+          ))}
+        </div>
+        <button className="btn-primary" style={{ width: '100%', opacity: canSave ? 1 : 0.5 }} disabled={!canSave || saving} onClick={save}>
+          {saving ? 'Adding…' : 'Add to library'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Book detail ---------- */
+function BookDetailScreen({ db, book, onBack, onDeleted }) {
+  const [pageValue, setPageValue] = useState(book.currentPage);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [showNoteForm, setShowNoteForm] = useState(false);
+  const accent = coverColorFor(book.id);
+  const maxPages = book.totalPages || 1;
+  const notesState = useCollection(db, `books/${book.id}/notes`, (q) => q.orderBy('createdAt', 'desc'));
+  const notes = notesState.docs;
+
+  useEffect(() => { setPageValue(book.currentPage); }, [book.id]);
+
+  const setStatus = (status) => db.doc(`books/${book.id}`).update({ status });
+  const setRating = (rating) => db.doc(`books/${book.id}`).update({ rating });
+
+  const commitProgress = async (value) => {
+    const delta = value - book.currentPage;
+    const finished = book.totalPages && value >= book.totalPages;
+    await db.doc(`books/${book.id}`).update({
+      currentPage: value,
+      status: finished ? 'finished' : 'reading',
+      startedAt: book.startedAt || new Date().toISOString(),
+      finishedAt: finished ? new Date().toISOString() : (book.finishedAt || null),
+    });
+    if (delta > 0) {
+      await db.collection('sessions').add({ bookId: book.id, date: new Date().toISOString(), pagesRead: delta });
+    }
+  };
+
+  const addNote = async () => {
+    if (!noteText.trim()) return;
+    await db.collection(`books/${book.id}/notes`).add({ content: noteText.trim(), page: pageValue, createdAt: new Date().toISOString() });
+    setNoteText('');
+    setShowNoteForm(false);
+  };
+
+  const deleteBook = async () => {
+    await db.doc(`books/${book.id}`).delete();
+    onDeleted();
+  };
+
+  return (
+    <div>
+      <div className="appbar">
+        <button className="back" onClick={onBack}><Icon.back /></button>
+        <div style={{ width: 24 }} />
+        <button className="icon-btn" style={{ background: 'none', color: 'var(--ink-muted)' }} onClick={() => setConfirmDelete(true)}><Icon.trash /></button>
+      </div>
+
+      <div className="screen-pad" style={{ paddingTop: 0 }}>
+        <div style={{ background: accent + '24', borderRadius: 24, padding: 18, display: 'flex', gap: 16 }}>
+          <div style={{ width: 72, height: 104, borderRadius: 14, flexShrink: 0, background: `linear-gradient(135deg, ${accent}, ${darken(accent, 40)})`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Icon.book style={{ color: 'rgba(255,255,255,0.55)', width: 30, height: 30 }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, fontFamily: 'Manrope, sans-serif', lineHeight: 1.15 }}>{book.title}</div>
+            <div style={{ color: 'var(--ink-muted)', fontSize: 14, marginTop: 4 }}>{book.author}</div>
+            <div className="stars" style={{ marginTop: 10 }}>
+              {[0, 1, 2, 3, 4].map((i) => (
+                <button key={i} onClick={() => setRating(i + 1)}>
+                  <Icon.star style={{ color: '#E8A422', fill: (book.rating || 0) > i ? '#E8A422' : 'none', stroke: '#E8A422', strokeWidth: (book.rating || 0) > i ? 0 : 1.6 }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 22, fontWeight: 800, fontSize: 15 }}>Status</div>
+        <div className="status-row">
+          {Object.keys(STATUS_LABEL).map((s) => (
+            <button
+              key={s}
+              className="status-pill"
+              style={{ background: book.status === s ? STATUS_COLOR[s] : STATUS_COLOR[s] + '1F', color: book.status === s ? '#fff' : STATUS_COLOR[s] }}
+              onClick={() => setStatus(s)}
+            >{STATUS_LABEL[s]}</button>
+          ))}
+        </div>
+
+        {book.totalPages ? (
+          <React.Fragment>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+              <div style={{ fontWeight: 800, fontSize: 15 }}>Progress</div>
+              <div style={{ color: 'var(--ink-muted)', fontWeight: 600, fontSize: 13.5 }}>{pageValue} / {book.totalPages} pages</div>
+            </div>
+            <input
+              type="range" min="0" max={maxPages} value={pageValue}
+              style={{ width: '100%', marginTop: 12, accentColor: accent }}
+              onChange={(e) => setPageValue(parseInt(e.target.value, 10))}
+              onMouseUp={(e) => commitProgress(parseInt(e.target.value, 10))}
+              onTouchEnd={(e) => commitProgress(parseInt(e.target.value, 10))}
+            />
+          </React.Fragment>
+        ) : (
+          <div style={{ color: 'var(--ink-muted)', fontSize: 13.5, marginTop: 16 }}>No page count set for this book.</div>
+        )}
+
+        <div style={{ height: 1, background: 'var(--hairline)', margin: '26px 0 16px' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontWeight: 800, fontSize: 15 }}>Notes &amp; quotes</div>
+          <button className="btn-text" style={{ display: 'flex', alignItems: 'center', gap: 4 }} onClick={() => setShowNoteForm(true)}><Icon.plus style={{ width: 15, height: 15 }} /> Add</button>
+        </div>
+
+        {notes.length === 0 ? (
+          <div className="empty-note">No notes yet.</div>
+        ) : notes.map((n) => (
+          <div className="note-card" key={n.id}>
+            <div className="text">
+              {n.content}
+              {n.page != null && <div className="page">Page {n.page}</div>}
+            </div>
+            <button onClick={() => db.doc(`books/${book.id}/notes/${n.id}`).delete()}><Icon.close /></button>
+          </div>
+        ))}
+      </div>
+
+      {confirmDelete && (
+        <ConfirmModal
+          title="Remove book?"
+          body={`This removes "${book.title}" and its notes.`}
+          confirmLabel="Remove"
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={deleteBook}
+        />
+      )}
+
+      {showNoteForm && (
+        <div className="backdrop" onClick={() => setShowNoteForm(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <h3>Add note</h3>
+            <textarea className="field" rows="4" placeholder="A quote, thought, or reminder…" value={noteText} onChange={(e) => setNoteText(e.target.value)} autoFocus />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 4 }}>
+              <button className="btn-text" onClick={() => setShowNoteForm(false)}>Cancel</button>
+              <button className="btn-primary" onClick={addNote}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Stats ---------- */
+function computeStreak(dates) {
+  if (dates.length === 0) return 0;
+  const days = new Set(dates.map((d) => new Date(d).toDateString()));
+  let streak = 0;
+  let cursor = new Date();
+  while (days.has(cursor.toDateString())) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function GoalRing({ progress, size }) {
+  const r = (size - 10) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--cream-card)" strokeWidth="9" />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E8A422" strokeWidth="9" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c * (1 - progress)}
+      />
+    </svg>
+  );
+}
+
+function StatsScreen({ db, books, sessions, onBack }) {
+  const year = new Date().getFullYear();
+  const goalDoc = useDoc(db, 'settings/goal');
+  const goal = goalDoc.data && goalDoc.data[year] ? goalDoc.data[year] : 12;
+  const [editingGoal, setEditingGoal] = useState(false);
+  const [goalInput, setGoalInput] = useState(String(goal));
+
+  const finishedThisYear = books.filter((b) => b.status === 'finished' && b.finishedAt && new Date(b.finishedAt).getFullYear() === year);
+  const pagesThisYear = finishedThisYear.reduce((sum, b) => sum + (b.totalPages || 0), 0);
+  const streak = computeStreak(sessions.map((s) => s.date));
+  const progress = Math.min(1, finishedThisYear.length / (goal || 1));
+
+  const saveGoal = async () => {
+    const n = parseInt(goalInput, 10) || goal;
+    await db.doc('settings/goal').set({ ...(goalDoc.data || {}), [year]: n });
+    setEditingGoal(false);
+  };
+
+  return (
+    <div>
+      <div className="appbar">
+        <button className="back" onClick={onBack}><Icon.back /></button>
+        <div className="title display">Stats</div>
+        <div style={{ width: 24 }} />
+      </div>
+      <div className="screen-pad" style={{ paddingTop: 0 }}>
+        <div className="goal-card">
+          <div style={{ position: 'relative', width: 84, height: 84, flexShrink: 0 }}>
+            <GoalRing progress={progress} size={84} />
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>{Math.round(progress * 100)}%</div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ fontWeight: 800, fontSize: 17 }}>Reading goal</div>
+              <button className="btn-text" onClick={() => { setGoalInput(String(goal)); setEditingGoal(true); }}>Edit</button>
+            </div>
+            <div style={{ color: 'var(--ink-muted)', fontSize: 13.5, marginTop: 4 }}>{finishedThisYear.length} of {goal} books this year</div>
+          </div>
+        </div>
+
+        <div className="stat-grid">
+          <div className="stat-tile" style={{ background: '#6E9B6B24' }}>
+            <Icon.book style={{ width: 22, height: 22, color: '#6E9B6B' }} />
+            <div className="value" style={{ color: '#6E9B6B' }}>{finishedThisYear.length}</div>
+            <div className="label">Books finished</div>
+            <div className="sub">{year}</div>
+          </div>
+          <div className="stat-tile" style={{ background: '#7C93D624' }}>
+            <Icon.notepad style={{ width: 22, height: 22, color: '#7C93D6' }} />
+            <div className="value" style={{ color: '#7C93D6' }}>{pagesThisYear}</div>
+            <div className="label">Pages read</div>
+            <div className="sub">{year}</div>
+          </div>
+        </div>
+
+        <div className="stat-tile" style={{ background: '#EF7B5724', marginTop: 12, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ fontSize: 28 }}>🔥</div>
+          <div style={{ fontSize: 30, fontWeight: 800, color: '#EF7B57', fontFamily: 'Manrope, sans-serif' }}>{streak}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: '#EF7B57' }}>days</div>
+          <div style={{ marginLeft: 'auto', color: 'var(--ink-muted)', fontSize: 12.5 }}>Current streak</div>
+        </div>
+      </div>
+
+      {editingGoal && (
+        <div className="modal-center" onClick={() => setEditingGoal(false)}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3>Annual reading goal</h3>
+            <input className="field" type="number" value={goalInput} onChange={(e) => setGoalInput(e.target.value)} autoFocus />
+            <div className="modal-actions">
+              <button className="btn-text" onClick={() => setEditingGoal(false)}>Cancel</button>
+              <button className="btn-primary" onClick={saveGoal}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Premium ---------- */
+const FEATURES = [
+  ['Unlimited notes & quotes', '#EF7B57', Icon.notepad],
+  ['Reading pace & trend insights', '#6E9B6B', Icon.trend],
+  ['Monthly & yearly breakdowns', '#7C93D6', Icon.calendar],
+];
+
+function PremiumScreen({ onBack }) {
+  return (
+    <div>
+      <div className="appbar">
+        <button className="back" onClick={onBack}><Icon.back /></button>
+        <div className="title display">Go Premium</div>
+        <div style={{ width: 24 }} />
+      </div>
+      <div className="screen-pad" style={{ textAlign: 'center' }}>
+        <div style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--yellow-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '8px auto 20px' }}>
+          <Icon.crown style={{ width: 40, height: 40, color: '#E8A422' }} />
+        </div>
+        <h2 style={{ fontSize: 24 }}>Read more, remember more</h2>
+        <p style={{ color: 'var(--ink-muted)', fontSize: 14, marginTop: 8 }}>Everything free, plus the tools to build a real reading habit.</p>
+        <div style={{ textAlign: 'left', marginTop: 24 }}>
+          {FEATURES.map(([label, color, Ic]) => (
+            <div className="feature-row" key={label}>
+              <div className="feature-icon" style={{ background: color + '26' }}><Ic style={{ color }} /></div>
+              <div style={{ fontWeight: 600, fontSize: 14.5 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+        <p style={{ color: 'var(--ink-muted)', fontSize: 12.5, marginTop: 28, lineHeight: 1.5 }}>
+          Subscriptions aren't wired up in this web preview — on Android this screen connects to Play Billing. Notes stay unlimited here for now.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- App root ---------- */
+function App() {
+  const db = useDb();
+  const booksState = useCollection(db, 'books', (q) => q.orderBy('addedAt', 'desc'));
+  const sessionsState = useCollection(db, 'sessions', (q) => q.orderBy('date', 'desc').limit(90));
+
+  const [view, setView] = useState({ name: 'home' });
+
+  const findBook = (id) => booksState.docs.find((b) => b.id === id);
+
+  let screen;
+  if (view.name === 'home') {
+    screen = <HomeScreen db={db} books={booksState.docs} loading={booksState.loading}
+      onOpenBook={(id) => setView({ name: 'detail', id })}
+      onOpenShelf={(key, label) => setView({ name: 'shelf', key, label })}
+      onAdd={() => setView({ name: 'add' })}
+      onStats={() => setView({ name: 'stats' })}
+      onPremium={() => setView({ name: 'premium' })} />;
+  } else if (view.name === 'shelf') {
+    screen = <ShelfListScreen label={view.label} books={booksState.docs.filter((b) => b.status === view.key)}
+      onBack={() => setView({ name: 'home' })} onOpenBook={(id) => setView({ name: 'detail', id })} />;
+  } else if (view.name === 'add') {
+    screen = <AddBookScreen db={db} onBack={() => setView({ name: 'home' })} />;
+  } else if (view.name === 'detail') {
+    const book = findBook(view.id);
+    screen = book
+      ? <BookDetailScreen db={db} book={book}
+          onBack={() => setView({ name: 'home' })} onDeleted={() => setView({ name: 'home' })} />
+      : <div className="empty-state"><p>Book not found.</p></div>;
+  } else if (view.name === 'stats') {
+    screen = <StatsScreen db={db} books={booksState.docs} sessions={sessionsState.docs} onBack={() => setView({ name: 'home' })} />;
+  } else if (view.name === 'premium') {
+    screen = <PremiumScreen onBack={() => setView({ name: 'home' })} />;
+  }
+
+  return <div className="app-shell">{screen}</div>;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
