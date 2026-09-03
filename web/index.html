@@ -413,15 +413,117 @@ function darken(hex, amt) {
   return `rgb(${r},${g},${b})`;
 }
 
-/* ---------- db hooks ---------- */
+/* ---------- local storage-backed store ----------
+ * Mimics the small subset of a Firestore-style API the screens use
+ * (collection/doc, get/set/update/delete, onSnapshot, orderBy, limit)
+ * so the UI code below doesn't need to know its data lives in
+ * localStorage rather than a real database. Everything lives in one
+ * browser, on one device — there is no sync, and clearing site data
+ * (or a private window) loses the library. */
+const STORAGE_KEY = 'pages.v1';
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function makeLocalDb() {
+  let store = loadStore();
+  const listeners = new Set();
+  const persist = () => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch (e) {}
+    listeners.forEach((fn) => fn());
+  };
+  const genId = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+
+  function docRef(path, id) {
+    return {
+      id,
+      get() {
+        const coll = store[path] || {};
+        const exists = Object.prototype.hasOwnProperty.call(coll, id);
+        return Promise.resolve({ id, exists, data: () => coll[id] });
+      },
+      set(data) {
+        store[path] = store[path] || {};
+        store[path][id] = { ...data };
+        persist();
+        return Promise.resolve();
+      },
+      update(data) {
+        store[path] = store[path] || {};
+        store[path][id] = { ...(store[path][id] || {}), ...data };
+        persist();
+        return Promise.resolve();
+      },
+      delete() {
+        if (store[path]) delete store[path][id];
+        persist();
+        return Promise.resolve();
+      },
+      onSnapshot(next) {
+        const compute = () => {
+          const coll = store[path] || {};
+          const exists = Object.prototype.hasOwnProperty.call(coll, id);
+          next({ id, exists, data: () => coll[id] });
+        };
+        compute();
+        listeners.add(compute);
+        return () => listeners.delete(compute);
+      },
+      collection(sub) { return collectionRef(`${path}/${id}/${sub}`); },
+    };
+  }
+
+  function collectionRef(path) {
+    let orderField = null, orderDir = 'asc', limitN = null;
+    const ref = {
+      doc(id) { return docRef(path, id || genId()); },
+      add(data) {
+        const ref = docRef(path, genId());
+        return ref.set(data).then(() => ref);
+      },
+      orderBy(field, dir) { orderField = field; orderDir = dir || 'asc'; return ref; },
+      limit(n) { limitN = n; return ref; },
+      onSnapshot(next) {
+        const compute = () => {
+          const coll = store[path] || {};
+          let docs = Object.keys(coll).map((id) => ({ id, exists: true, data: () => coll[id] }));
+          if (orderField) {
+            docs.sort((a, b) => {
+              const av = a.data()[orderField], bv = b.data()[orderField];
+              if (av === bv) return 0;
+              const cmp = av < bv ? -1 : 1;
+              return orderDir === 'desc' ? -cmp : cmp;
+            });
+          }
+          if (limitN) docs = docs.slice(0, limitN);
+          next({ docs });
+        };
+        compute();
+        listeners.add(compute);
+        return () => listeners.delete(compute);
+      },
+    };
+    return ref;
+  }
+
+  return {
+    collection: collectionRef,
+    doc(fullPath) {
+      const parts = fullPath.split('/');
+      const id = parts.pop();
+      return docRef(parts.join('/'), id);
+    },
+  };
+}
+
 function useDb() {
-  const [db, setDb] = useState(undefined); // undefined = loading, null = unavailable
-  useEffect(() => {
-    let cancelled = false;
-    if (!window.claude) { setDb(null); return; }
-    window.claude.use('db').then((d) => { if (!cancelled) setDb(d); });
-    return () => { cancelled = true; };
-  }, []);
+  const [db] = useState(makeLocalDb);
   return db;
 }
 
@@ -664,7 +766,7 @@ function AddBookScreen({ db, onBack }) {
       </div>
       <div className="screen-pad">
         <p style={{ color: 'var(--ink-muted)', fontSize: 13, marginTop: 4 }}>
-          Catalog search isn't available in this web preview — add books by hand.
+          Catalog search isn't available on the web version — add books by hand.
         </p>
         <input className="field" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <input className="field" placeholder="Author" value={author} onChange={(e) => setAuthor(e.target.value)} />
@@ -968,7 +1070,7 @@ function PremiumScreen({ onBack }) {
           ))}
         </div>
         <p style={{ color: 'var(--ink-muted)', fontSize: 12.5, marginTop: 28, lineHeight: 1.5 }}>
-          Subscriptions aren't wired up in this web preview — on Android this screen connects to Play Billing. Notes stay unlimited here for now.
+          Subscriptions aren't wired up on the web version — on Android this screen connects to Play Billing. Notes stay unlimited here for now.
         </p>
       </div>
     </div>

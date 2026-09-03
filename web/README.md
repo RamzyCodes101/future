@@ -1,43 +1,57 @@
 # Pages — web version
 
 A single-page React app (loaded via CDN, JSX compiled in-browser with
-Babel standalone — no build step) that reimplements the reading tracker:
-shelves by status, book detail with progress/rating/notes, a stats screen
-with a reading-goal ring and streak, and a Premium screen (informational
-only — no billing wired up on web).
+Babel standalone — no build step, no `npm install`) that reimplements
+the reading tracker: shelves by status, book detail with progress/
+rating/notes, and a stats screen with a reading-goal ring and streak.
 
-## Where this actually runs
+## Data storage
 
-`index.html` is written specifically for the **Claude Artifacts**
-runtime: it stores data through `window.claude.use("db")`, a database
-capability that only exists when the page is opened inside Claude
-(claude.ai/code/artifact/...). Opened anywhere else, `window.claude` is
-undefined, so the UI renders but nothing persists — no books, no notes,
-no saved goal.
+Everything is saved to the browser's `localStorage` (see the "local
+storage-backed store" block near the top of the `<script type="text/
+babel">` tag in `index.html`). That means:
 
-Live version: https://claude.ai/code/artifact/1cea9116-af41-4d76-aafd-ce0f3ec47ee8
+- It's fully self-contained — no backend, no signup, works the moment
+  the page loads.
+- Data lives on **one browser, one device**. Clearing site data, using
+  a private window, or opening the site on a different device all
+  start from an empty library. There's no sync.
+- The "Go Premium" screen is informational only — no billing is wired
+  up on web, so notes stay unlimited here (the Play Store version's
+  3-note free-tier cap doesn't apply).
 
-## If you want a portable version instead
+If you outgrow single-device storage later, swapping in a real backend
+(Firebase, Supabase, or a small API + Postgres) is a data-layer change
+only — the UI and components don't need to change.
 
-To deploy this to your own domain (Vercel, Netlify, GitHub Pages, etc.)
-it needs a real persistence layer, since there's no `window.claude` to
-lean on outside Claude. The two realistic options:
+## Deploying to Vercel
 
-- **localStorage-only**: simplest — keeps everything on that one
-  browser/device, no backend to run. Good for a personal single-device
-  tool, same tradeoff the Flutter/mobile version has today.
-- **A real backend** (e.g. Firebase, Supabase, or a small API + Postgres):
-  needed for the library to sync across devices or browsers. More setup,
-  but matches what "install it on your phone and use it everywhere"
-  usually means.
+This directory is a plain static site (one `index.html`, no build
+step), so Vercel needs zero configuration:
 
-Ask for either and it can be adapted from this file — the UI and
-component structure carry over, only the data layer changes.
+1. Go to [vercel.com/new](https://vercel.com/new) and import the
+   `RamzyCodes101/future` GitHub repo (connect GitHub first if you
+   haven't).
+2. When it asks for the **root directory**, set it to `web`.
+3. Framework preset: **Other** (or leave on auto-detect — there's no
+   framework here, just static HTML).
+4. Leave build command and output directory blank — nothing to build.
+5. Deploy. Vercel gives you a `*.vercel.app` URL immediately, and every
+   push to this branch (or whichever branch you connect) redeploys it
+   automatically.
 
-## Relationship to the Flutter app
+To use a custom domain afterward: Vercel project → Settings → Domains.
 
-`reading_tracker/` (the Flutter/Dart app targeting Android) is untouched
-by this — both versions currently exist side by side. This directory
-does not build or deploy anything on its own; `index.html` is meant to be
-published as a Claude Artifact (or adapted per above for standalone
-hosting).
+## Relationship to the other versions
+
+- `reading_tracker/` — the Flutter/Dart app targeting Android (Play
+  Store), untouched by this.
+- This directory previously stored data via the Claude Artifacts
+  platform's `db` capability (`window.claude`), which only works
+  inside claude.ai. It's since been switched to `localStorage` so it
+  runs anywhere, Vercel included — see git history if you need the
+  Claude-Artifact-only version back.
+
+All three share the same visual identity (palette, layout, copy) but
+are otherwise independent — none of them read or write each other's
+data.
