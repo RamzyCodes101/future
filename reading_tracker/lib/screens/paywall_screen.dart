@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../services/premium_service.dart';
+import '../theme/app_theme.dart';
 
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({super.key});
@@ -17,10 +18,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
   String? _error;
 
   static const _features = [
-    ('Unlimited notes & quotes', Icons.sticky_note_2_outlined),
-    ('Reading pace & trend insights', Icons.trending_up),
-    ('Monthly & yearly breakdowns', Icons.calendar_month_outlined),
-    ('Priority support', Icons.support_agent_outlined),
+    ('Unlimited notes & quotes', Icons.sticky_note_2_rounded, AppColors.coral),
+    ('Reading pace & trend insights', Icons.trending_up_rounded, AppColors.sage),
+    ('Monthly & yearly breakdowns', Icons.calendar_month_rounded, AppColors.periwinkle),
+    ('Priority support', Icons.support_agent_rounded, AppColors.plum),
   ];
 
   @override
@@ -53,31 +54,50 @@ class _PaywallScreenState extends State<PaywallScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Go Premium')),
+      backgroundColor: AppColors.cream,
+      appBar: AppBar(backgroundColor: AppColors.cream, title: const Text('Go Premium')),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         children: [
-          Icon(Icons.workspace_premium, size: 56, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(height: 16),
-          Text(
+          Center(
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: const BoxDecoration(color: AppColors.yellowPale, shape: BoxShape.circle),
+              child: const Icon(Icons.workspace_premium_rounded, size: 44, color: AppColors.yellowDeeper),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
             'Read more, remember more',
-            style: Theme.of(context).textTheme.headlineSmall,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: AppColors.ink),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 6),
+          const Text(
+            'Everything in Free, plus the tools to build a real reading habit.',
+            style: TextStyle(color: AppColors.inkMuted, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 28),
           ..._features.map(
             (f) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: 7),
               child: Row(
                 children: [
-                  Icon(f.$2, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(f.$1)),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(color: f.$3.withValues(alpha: 0.15), shape: BoxShape.circle),
+                    child: Icon(f.$2, color: f.$3, size: 20),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(child: Text(f.$1, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14.5))),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           if (_loading) const Center(child: CircularProgressIndicator()),
           if (_error != null)
             Padding(
@@ -85,7 +105,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               child: Text(
                 _error!,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+                style: const TextStyle(color: AppColors.coral),
               ),
             ),
           ..._products.map(
@@ -98,13 +118,16 @@ class _PaywallScreenState extends State<PaywallScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => PremiumService.instance.restorePurchases(),
-            child: const Text('Restore purchases'),
+          Center(
+            child: TextButton(
+              onPressed: () => PremiumService.instance.restorePurchases(),
+              child: const Text('Restore purchases'),
+            ),
           ),
           if (kDebugMode) ...[
             const Divider(height: 32),
-            Text('Debug only', style: Theme.of(context).textTheme.labelSmall),
+            const Text('Debug only', style: TextStyle(color: AppColors.inkMuted, fontSize: 11)),
+            const SizedBox(height: 8),
             OutlinedButton(
               onPressed: () => PremiumService.instance.debugSetPremium(true),
               child: const Text('Force-enable premium (debug)'),

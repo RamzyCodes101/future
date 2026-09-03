@@ -5,6 +5,7 @@ import '../models/book.dart';
 import '../models/reading_session.dart';
 import '../providers/app_providers.dart';
 import '../services/goal_service.dart';
+import '../theme/app_theme.dart';
 import 'paywall_screen.dart';
 
 class StatsScreen extends ConsumerStatefulWidget {
@@ -81,24 +82,43 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
           final streak = _computeStreak(sessions.map((s) => s.date).toList());
 
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             children: [
-              if (_goalLoaded) _GoalCard(goal: _goal, done: finishedThisYear.length, onEdit: _editGoal),
-              const SizedBox(height: 16),
+              if (_goalLoaded) _GoalRingCard(goal: _goal, done: finishedThisYear.length, onEdit: _editGoal),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
-                    child: _StatCard(label: 'Books finished ($_year)', value: '${finishedThisYear.length}'),
+                    child: _StatCard(
+                      label: 'Books finished',
+                      sublabel: '$_year',
+                      value: '${finishedThisYear.length}',
+                      emoji: '📚',
+                      tint: AppColors.sage,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _StatCard(label: 'Pages read ($_year)', value: '$totalPagesThisYear'),
+                    child: _StatCard(
+                      label: 'Pages read',
+                      sublabel: '$_year',
+                      value: '$totalPagesThisYear',
+                      emoji: '📄',
+                      tint: AppColors.periwinkle,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              _StatCard(label: 'Current streak', value: '$streak day${streak == 1 ? '' : 's'}'),
-              const SizedBox(height: 24),
+              _StatCard(
+                label: 'Current streak',
+                sublabel: 'consecutive days',
+                value: '$streak',
+                emoji: '🔥',
+                tint: AppColors.coral,
+                wide: true,
+              ),
+              const SizedBox(height: 20),
               if (isPremium)
                 _PacePanel(sessions: sessions)
               else
@@ -128,37 +148,75 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   }
 }
 
-class _GoalCard extends StatelessWidget {
+class _GoalRingCard extends StatelessWidget {
   final int goal;
   final int done;
   final VoidCallback onEdit;
-  const _GoalCard({required this.goal, required this.done, required this.onEdit});
+  const _GoalRingCard({required this.goal, required this.done, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
     final progress = goal == 0 ? 0.0 : (done / goal).clamp(0, 1).toDouble();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.yellowPale.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 84,
+            height: 84,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Text('Reading goal', style: Theme.of(context).textTheme.titleMedium),
-                TextButton(onPressed: onEdit, child: const Text('Edit')),
+                SizedBox(
+                  width: 84,
+                  height: 84,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 9,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: AppColors.creamCard,
+                    valueColor: const AlwaysStoppedAnimation(AppColors.yellowDeeper),
+                  ),
+                ),
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.ink),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(value: progress, minHeight: 10),
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Reading goal', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17)),
+                    GestureDetector(
+                      onTap: onEdit,
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.coral),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '$done of $goal books this year',
+                  style: const TextStyle(color: AppColors.inkMuted, fontSize: 13.5),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text('$done of $goal books this year'),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -166,23 +224,52 @@ class _GoalCard extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final String label;
+  final String sublabel;
   final String value;
-  const _StatCard({required this.label, required this.value});
+  final String emoji;
+  final Color tint;
+  final bool wide;
+
+  const _StatCard({
+    required this.label,
+    required this.sublabel,
+    required this.value,
+    required this.emoji,
+    required this.tint,
+    this.wide = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(value, style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 4),
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
       ),
+      child: wide
+          ? Row(
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 28)),
+                const SizedBox(width: 14),
+                Text(value, style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: tint)),
+                const SizedBox(width: 8),
+                Text('days', style: TextStyle(fontSize: 14, color: tint, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                Text(label, style: const TextStyle(color: AppColors.inkMuted, fontSize: 12.5)),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 24)),
+                const SizedBox(height: 10),
+                Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: tint)),
+                const SizedBox(height: 2),
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(sublabel, style: const TextStyle(color: AppColors.inkMuted, fontSize: 11.5)),
+              ],
+            ),
     );
   }
 }
@@ -197,25 +284,27 @@ class _PacePanel extends StatelessWidget {
     final pagesLast30 = last30.fold<int>(0, (sum, s) => sum + s.pagesRead);
     final avgPerDay = pagesLast30 / 30;
 
-    return Card(
-      color: Theme.of(context).colorScheme.secondaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.workspace_premium, size: 18),
-                const SizedBox(width: 8),
-                Text('Your pace', style: Theme.of(context).textTheme.titleMedium),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text('${avgPerDay.toStringAsFixed(1)} pages/day average over the last 30 days'),
-            Text('$pagesLast30 pages read in the last 30 days'),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.sage.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.workspace_premium_rounded, size: 18, color: AppColors.sage),
+              const SizedBox(width: 8),
+              const Text('Your pace', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text('${avgPerDay.toStringAsFixed(1)} pages/day average over the last 30 days'),
+          const SizedBox(height: 2),
+          Text('$pagesLast30 pages read in the last 30 days', style: const TextStyle(color: AppColors.inkMuted)),
+        ],
       ),
     );
   }
@@ -227,13 +316,40 @@ class _PremiumTeaser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.workspace_premium_outlined),
-        title: const Text('Unlock pace & trend insights'),
-        subtitle: const Text('See your daily pace, projections, and monthly breakdowns with Premium.'),
-        trailing: const Icon(Icons.chevron_right),
+    return Material(
+      color: AppColors.yellowPale.withValues(alpha: 0.55),
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: const BoxDecoration(color: AppColors.yellowDeep, shape: BoxShape.circle),
+                child: const Icon(Icons.workspace_premium_rounded, color: AppColors.ink),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Unlock pace & trend insights', style: TextStyle(fontWeight: FontWeight.w800)),
+                    SizedBox(height: 2),
+                    Text(
+                      'See your daily pace, projections, and monthly breakdowns.',
+                      style: TextStyle(color: AppColors.inkMuted, fontSize: 12.5),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.ink),
+            ],
+          ),
+        ),
       ),
     );
   }

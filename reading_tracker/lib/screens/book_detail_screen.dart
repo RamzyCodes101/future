@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/book.dart';
 import '../models/note.dart';
 import '../providers/app_providers.dart';
+import '../theme/app_theme.dart';
 import 'paywall_screen.dart';
 
 /// Free tier caps notes/quotes per book; premium unlocks unlimited notes.
@@ -127,75 +128,172 @@ class _BookDetailBodyState extends ConsumerState<_BookDetailBody> {
     final notesAsync = ref.watch(notesProvider(book.id));
     final isPremium = ref.watch(isPremiumProvider).valueOrNull ?? false;
     final maxPages = book.totalPages ?? 1;
+    final accent = AppColors.coverColorFor(book.id);
+    final noteCount = notesAsync.valueOrNull?.length ?? 0;
 
     return Scaffold(
+      backgroundColor: AppColors.cream,
       appBar: AppBar(
-        title: Text(book.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        backgroundColor: AppColors.cream,
+        title: const Text(''),
         actions: [
-          IconButton(icon: const Icon(Icons.delete_outline), onPressed: _deleteBook),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: _deleteBook,
+            color: AppColors.inkMuted,
+          ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         children: [
-          Text(book.author, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<ReadingStatus>(
-            initialValue: book.status,
-            decoration: const InputDecoration(labelText: 'Status', border: OutlineInputBorder()),
-            items: ReadingStatus.values
-                .map((s) => DropdownMenuItem(value: s, child: Text(_statusLabel(s))))
-                .toList(),
-            onChanged: (status) {
-              if (status == null) return;
-              ref.read(booksProvider.notifier).upsert(book.copyWith(status: status));
-            },
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 72,
+                  height: 104,
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(Icons.menu_book_rounded, size: 30, color: accent),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.title,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, height: 1.15),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(book.author, style: const TextStyle(color: AppColors.inkMuted, fontSize: 14)),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: List.generate(5, (i) {
+                          final filled = (book.rating ?? 0) > i;
+                          return GestureDetector(
+                            onTap: () => ref
+                                .read(booksProvider.notifier)
+                                .upsert(book.copyWith(rating: i + 1)),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 2),
+                              child: Icon(
+                                filled ? Icons.star_rounded : Icons.star_border_rounded,
+                                color: AppColors.yellowDeeper,
+                                size: 26,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text('Status', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: ReadingStatus.values.map((status) {
+              final selected = status == book.status;
+              final color = AppColors.statusColor(status);
+              return GestureDetector(
+                onTap: () => ref.read(booksProvider.notifier).upsert(book.copyWith(status: status)),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: selected ? color : color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _statusLabel(status),
+                    style: TextStyle(
+                      color: selected ? Colors.white : color,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 24),
           if (book.totalPages != null) ...[
-            Text('Progress: $_pageValue / ${book.totalPages} pages',
-                style: Theme.of(context).textTheme.bodyLarge),
-            Slider(
-              value: _pageValue.toDouble().clamp(0, maxPages.toDouble()),
-              min: 0,
-              max: maxPages.toDouble(),
-              divisions: maxPages > 0 ? maxPages : null,
-              label: '$_pageValue',
-              onChanged: (v) => setState(() => _pageValue = v.round()),
-              onChangeEnd: (v) => ref.read(booksProvider.notifier).logProgress(book, v.round()),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Progress', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+                Text(
+                  '$_pageValue / ${book.totalPages} pages',
+                  style: const TextStyle(color: AppColors.inkMuted, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: accent,
+                thumbColor: accent,
+                overlayColor: accent.withValues(alpha: 0.15),
+                inactiveTrackColor: AppColors.hairline,
+              ),
+              child: Slider(
+                value: _pageValue.toDouble().clamp(0, maxPages.toDouble()),
+                min: 0,
+                max: maxPages.toDouble(),
+                divisions: maxPages > 0 ? maxPages : null,
+                label: '$_pageValue',
+                onChanged: (v) => setState(() => _pageValue = v.round()),
+                onChangeEnd: (v) => ref.read(booksProvider.notifier).logProgress(book, v.round()),
+              ),
             ),
           ] else
-            const Text('No page count set — add one to track progress.'),
-          const SizedBox(height: 16),
+            const Text('No page count set — add one to track progress.', style: TextStyle(color: AppColors.inkMuted)),
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Rating', style: Theme.of(context).textTheme.bodyLarge),
-              Row(
-                children: List.generate(5, (i) {
-                  final filled = (book.rating ?? 0) > i;
-                  return IconButton(
-                    icon: Icon(filled ? Icons.star : Icons.star_border),
-                    onPressed: () => ref.read(booksProvider.notifier).upsert(
-                          book.copyWith(rating: i + 1),
-                        ),
-                  );
-                }),
-              ),
-            ],
-          ),
-          const Divider(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Notes & quotes', style: Theme.of(context).textTheme.titleMedium),
+              const Text('Notes & quotes', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
               TextButton.icon(
                 onPressed: () => _addNote(isPremium),
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add_rounded, size: 18),
                 label: const Text('Add'),
               ),
             ],
           ),
+          if (!isPremium) ...[
+            const SizedBox(height: 4),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: LinearProgressIndicator(
+                value: (noteCount / kFreeNoteLimit).clamp(0, 1).toDouble(),
+                minHeight: 5,
+                backgroundColor: AppColors.hairline,
+                valueColor: const AlwaysStoppedAnimation(AppColors.yellowDeeper),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '$noteCount/$kFreeNoteLimit free notes used',
+              style: const TextStyle(color: AppColors.inkMuted, fontSize: 11.5),
+            ),
+          ],
+          const SizedBox(height: 8),
           notesAsync.when(
             loading: () => const Padding(
               padding: EdgeInsets.all(16),
@@ -206,34 +304,52 @@ class _BookDetailBodyState extends ConsumerState<_BookDetailBody> {
               if (notes.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('No notes yet.'),
+                  child: Text('No notes yet.', style: TextStyle(color: AppColors.inkMuted)),
                 );
               }
               return Column(
                 children: notes
-                    .map((note) => Card(
-                          child: ListTile(
-                            title: Text(note.content),
-                            subtitle: Text(note.page != null ? 'Page ${note.page}' : ''),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.close, size: 18),
-                              onPressed: () =>
-                                  ref.read(notesProvider(book.id).notifier).delete(note.id),
-                            ),
+                    .map((note) => Container(
+                          margin: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppColors.yellowPale.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(16),
+                            border: const Border(left: BorderSide(color: AppColors.yellowDeeper, width: 4)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(note.content, style: const TextStyle(fontSize: 14, height: 1.35)),
+                                    if (note.page != null) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Page ${note.page}',
+                                        style: const TextStyle(
+                                          color: AppColors.inkMuted,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => ref.read(notesProvider(book.id).notifier).delete(note.id),
+                                child: const Icon(Icons.close_rounded, size: 18, color: AppColors.inkMuted),
+                              ),
+                            ],
                           ),
                         ))
                     .toList(),
               );
             },
           ),
-          if (!isPremium)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                '${(notesAsync.valueOrNull ?? []).length}/$kFreeNoteLimit free notes used',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
         ],
       ),
     );
