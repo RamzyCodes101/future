@@ -1,0 +1,44 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "reading_tracker/**"
+      - ".github/workflows/build-android.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reading_tracker
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+      # Debug build: no release keystore needed, installs fine via
+      # "sideload" for testing. Swap to `flutter build apk --release`
+      # once a signing config is set up for a real Play Store upload.
+      - run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pages-debug-apk
+          path: reading_tracker/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14

@@ -64,6 +64,16 @@ flutter run                 # needs an Android/iOS toolchain + device/emulator
 flutter build apk --release # needs the Android SDK
 ```
 
+### Getting a real APK without installing Android Studio
+
+`.github/workflows/build-android.yml` builds a debug APK on every push and
+on manual trigger. After a push, go to the repo's **Actions** tab, open the
+latest "Build Android APK" run, and download the `pages-debug-apk`
+artifact — that's a real, installable build you can sideload onto an
+Android phone (enable "Install unknown apps" for your file manager/browser,
+then open the APK). It's a debug build, so it's unsigned and larger/slower
+than a release build, but it's the real app running on real hardware.
+
 ## Before publishing to Play Store
 
 1. Create the two subscription products in Play Console matching the IDs in
