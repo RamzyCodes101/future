@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="1125" viewBox="0 0 2000 1125">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#4a1c1b"/>
+      <stop offset="1" stop-color="#16161a"/>
+    </linearGradient>
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+      <feColorMatrix type="saturate" values="0"/></filter>
+    <clipPath id="c"><rect width="2000" height="1125"/></clipPath>
+  </defs>
+  <rect width="2000" height="1125" fill="url(#g)"/>
+  <g clip-path="url(#c)">
+  <g stroke="#c6a664" stroke-opacity="0.24" fill="none" stroke-width="1.25">
+    <path d="M -400 1400 L 300 0" /><path d="M -400 0 L 300 1400" /><path d="M -310 1400 L 390 0" /><path d="M -310 0 L 390 1400" /><path d="M -220 1400 L 480 0" /><path d="M -220 0 L 480 1400" /><path d="M -130 1400 L 570 0" /><path d="M -130 0 L 570 1400" /><path d="M -40 1400 L 660 0" /><path d="M -40 0 L 660 1400" /><path d="M 50 1400 L 750 0" /><path d="M 50 0 L 750 1400" /><path d="M 140 1400 L 840 0" /><path d="M 140 0 L 840 1400" /><path d="M 230 1400 L 930 0" /><path d="M 230 0 L 930 1400" /><path d="M 320 1400 L 1020 0" /><path d="M 320 0 L 1020 1400" /><path d="M 410 1400 L 1110 0" /><path d="M 410 0 L 1110 1400" /><path d="M 500 1400 L 1200 0" /><path d="M 500 0 L 1200 1400" /><path d="M 590 1400 L 1290 0" /><path d="M 590 0 L 1290 1400" /><path d="M 680 1400 L 1380 0" /><path d="M 680 0 L 1380 1400" /><path d="M 770 1400 L 1470 0" /><path d="M 770 0 L 1470 1400" /><path d="M 860 1400 L 1560 0" /><path d="M 860 0 L 1560 1400" /><path d="M 950 1400 L 1650 0" /><path d="M 950 0 L 1650 1400" /><path d="M 1040 1400 L 1740 0" /><path d="M 1040 0 L 1740 1400" /><path d="M 1130 1400 L 1830 0" /><path d="M 1130 0 L 1830 1400" /><path d="M 1220 1400 L 1920 0" /><path d="M 1220 0 L 1920 1400" /><path d="M 1310 1400 L 2010 0" /><path d="M 1310 0 L 2010 1400" /><path d="M 1400 1400 L 2100 0" /><path d="M 1400 0 L 2100 1400" /><path d="M 1490 1400 L 2190 0" /><path d="M 1490 0 L 2190 1400" />
+  </g></g>
+  <rect width="2000" height="1125" filter="url(#n)" opacity="0.06"/>
+</svg>

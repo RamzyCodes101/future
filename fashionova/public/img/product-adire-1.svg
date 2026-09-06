@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#16161a"/>
+      <stop offset="1" stop-color="#12352e"/>
+    </linearGradient>
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+      <feColorMatrix type="saturate" values="0"/></filter>
+    <clipPath id="c"><rect width="1200" height="1600"/></clipPath>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#g)"/>
+  <g clip-path="url(#c)">
+  <g stroke="#9a8b79" stroke-opacity="0.24" fill="none" stroke-width="1.5">
+    <circle cx="50%" cy="118%" r="90" /><circle cx="50%" cy="118%" r="136" /><circle cx="50%" cy="118%" r="182" /><circle cx="50%" cy="118%" r="228" /><circle cx="50%" cy="118%" r="274" /><circle cx="50%" cy="118%" r="320" /><circle cx="50%" cy="118%" r="366" /><circle cx="50%" cy="118%" r="412" /><circle cx="50%" cy="118%" r="458" /><circle cx="50%" cy="118%" r="504" /><circle cx="50%" cy="118%" r="550" /><circle cx="50%" cy="118%" r="596" /><circle cx="50%" cy="118%" r="642" /><circle cx="50%" cy="118%" r="688" />
+  </g></g>
+  <rect width="1200" height="1600" filter="url(#n)" opacity="0.06"/>
+</svg>

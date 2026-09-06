@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#efeae1"/>
+      <stop offset="1" stop-color="#dcd4c7"/>
+    </linearGradient>
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
+      <feColorMatrix type="saturate" values="0"/></filter>
+    <clipPath id="c"><rect width="1200" height="1600"/></clipPath>
+  </defs>
+  <rect width="1200" height="1600" fill="url(#g)"/>
+  <g clip-path="url(#c)">
+  <g stroke="#4a1c1b" stroke-opacity="0.42" fill="none"
+     stroke-width="7.2" stroke-linecap="round">
+    <path d="M 552 416
+             C 384 480 348 736 408 896
+             C 468 1056 624 1088 696 960
+             C 792 800 744 512 600 480" />
+    <path d="M 432 672 q 60 -48 120 0" />
+    <path d="M 456 688 l 0 19" />
+    <ellipse cx="756" cy="832" rx="42" ry="72" />
+    <path d="M 480 928 q 72 56 144 -13" />
+    <path d="M 660 320
+             C 816 384 864 640 792 800" />
+  </g></g>
+  <rect width="1200" height="1600" filter="url(#n)" opacity="0.06"/>
+</svg>

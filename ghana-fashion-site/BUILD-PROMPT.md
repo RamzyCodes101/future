@@ -1,5 +1,11 @@
 # Ghana Fashion Brand — Awwwards-Grade Website
 
+> **This has been built.** The working site is in [`../fashionova/`](../fashionova) —
+> Next.js 16, GSAP, React Three Fiber, Sanity and Paystack, with a twelve-piece
+> sample collection so it runs with no accounts or keys. Start there; this
+> document is the brief it was built from, kept for reference and for briefing
+> other tools.
+
 Two things live in this folder:
 
 1. **[The build prompt](#part-2--the-build-prompt)** — copy-paste it into Claude Code, Cursor, v0, or Lovable to scaffold the site.
@@ -13,13 +19,13 @@ Read Part 1 once so you can defend the choices. Ship Part 2.
 
 ### The short answer
 
-**Next.js 15 + TypeScript + Tailwind v4 + GSAP (ScrollTrigger/SplitText/Flip) + React Three Fiber + Motion + Sanity CMS + Paystack + Vercel.**
+**Next.js 16 + TypeScript + Tailwind v4 + GSAP (ScrollTrigger/SplitText/Flip) + React Three Fiber + Motion + Sanity CMS + Paystack + Vercel.**
 
 ### The full table
 
 | Layer | Pick | Why this and not the alternative |
 |---|---|---|
-| Framework | **Next.js 15** (App Router, RSC) | Server components render your product grid as HTML — critical on 3G. Astro is faster for static, but you need a cart, auth and a live CMS, so Next wins. |
+| Framework | **Next.js 16** (App Router, RSC) | Server components render your product grid as HTML — critical on 3G. Astro is faster for static, but you need a cart, auth and a live CMS, so Next wins. |
 | Language | **TypeScript** | Non-negotiable once products, variants and prices have shapes. |
 | Styling | **Tailwind CSS v4** | v4's CSS-first config + native cascade layers. Pair with CSS variables for the brand palette so the Three.js scene can read the same colors. |
 | Scroll animation | **GSAP 3 + ScrollTrigger** | The Awwwards default. Every plugin (SplitText, ScrollSmoother, Flip, MorphSVG, DrawSVG, Observer) is free under the standard license since Webflow acquired GSAP. Nothing else pins animation to scroll position this precisely. |
@@ -47,14 +53,14 @@ Read Part 1 once so you can defend the choices. Ship Part 2.
 
 ---
 
-Build a production-ready website for **[BRAND NAME]**, a contemporary fashion label based in Accra, Ghana, working in Ankara wax print, kente-inspired weaves, adire, and modern tailored silhouettes for men and women. The brand sits at the intersection of West African textile heritage and modern streetwear/ready-to-wear.
+Build a production-ready website for **Fashionova**, a contemporary fashion label based in Accra, Ghana, working in Ankara wax print, kente-inspired weaves, adire, and modern tailored silhouettes for men and women. The brand sits at the intersection of West African textile heritage and modern streetwear/ready-to-wear.
 
 The site must feel like an **Awwwards Site of the Day**: editorial, confident, physical. Not a template. Every scroll should reveal something. Judge every screen against the question "would this get a Site of the Day nomination?" — if it looks like a Bootstrap store with animations bolted on, redo it.
 
 ### 1. Tech stack — use exactly this
 
 ```
-Framework      Next.js 15 (App Router, React Server Components), TypeScript strict
+Framework      Next.js 16 (App Router, React Server Components), TypeScript strict
 Styling        Tailwind CSS v4 + CSS custom properties for the brand palette
 Scroll         GSAP 3 (ScrollTrigger, SplitText, Flip, Observer, DrawSVG) + Lenis smooth scroll
 UI motion      Motion (framer-motion) for layout transitions and page transitions
@@ -71,19 +77,24 @@ Install GSAP from npm (`gsap` — all plugins are included free under the standa
 
 ### 2. Art direction
 
-**Palette** — derive from the reference imagery, not from a generic "African = orange" cliché:
+**Palette** — premium means restraint, not more colour. Near-black and ivory do
+the structural work; the saturated tones are reserved for full-bleed editorial
+surfaces, and champagne appears only as hairlines and hover states:
 
 ```css
---sand:      #E8DCC8   /* raw cotton, the dominant ground */
---clay:      #C4703F   /* terracotta appliqué */
---ink:       #14110F   /* near-black, all body text */
---indigo:    #1B3A5C   /* adire indigo, secondary surfaces */
---teal:      #2E7A85   /* wax-print accent */
---gold:      #C89B3C   /* jewellery, hover states, thin rules only */
---bone:      #FAF7F2   /* page background */
+--noir:      #0B0B0C   /* near-black — the structural colour */
+--ink:       #16161A   /* body text */
+--graphite:  #3A3A40   /* secondary text */
+--taupe:     #9A8B79   /* muted labels, rules */
+--mist:      #DCD4C7   /* text on dark grounds */
+--bone:      #EFEAE1   /* image wells, secondary surfaces */
+--ivory:     #F7F4EE   /* page background */
+--champagne: #C6A664   /* hairlines and hover only — never a filled block */
+--jade:      #12352E   /* deep editorial ground */
+--oxblood:   #4A1C1B   /* deep editorial ground */
 ```
 
-Use `--sand`/`--bone` as the ground 80% of the time. Color arrives via the photography, not via painted UI blocks.
+Use `--ivory`/`--bone` as the ground 80% of the time. Colour arrives via the photography, not via painted UI blocks. The fastest way to make this look cheap is to fill a large area with champagne.
 
 **Type** — a high-contrast display serif for headlines (PP Editorial New, Reckless Neue, or Instrument Serif as a free stand-in) against a neutral grotesque for UI (Neue Haas, Suisse Int'l, or Inter Tight). Headline scale is aggressive: `clamp(3rem, 12vw, 14rem)`, tight tracking (`-0.04em`), leading under 0.9. Product names in small caps with wide tracking.
 
@@ -256,7 +267,7 @@ This site is being viewed in Accra, not on a MacBook in San Francisco. Budget:
 
 Working code, plus a `README.md` I can actually follow that covers: every environment variable and where to get it, how to log into the Studio, **how to add a product and change a price in under two minutes**, and how to connect the Paystack live keys when we go from test to real money.
 
-Ask me for the brand name, the domain, and the first six products before you start. Then build it.
+Ask me for the domain and the first six products before you start. Then build it.
 
 ---
 
@@ -264,5 +275,11 @@ Ask me for the brand name, the domain, and the first six products before you sta
 
 - Get a **Paystack business account** verified early — Ghanaian KYC (business registration, ID, bank details) can take a few days, and you cannot take real money until it clears.
 - Photography is 70% of whether this reads as Awwwards-grade. Budget for one proper editorial shoot on location in Accra before launch. No amount of GSAP rescues weak images.
-- Buy the `.com`; also park the `.com.gh`.
+- **Check the name before you print anything.** "Fashionova" is one character
+  off *Fashion Nova*, the US fast-fashion company, which holds registered
+  trademarks in apparel and buys heavily on search. That means a likely dispute
+  over a `.com`, and paid search you will never win. Worth ten minutes with a
+  Ghanaian trademark agent before the signage and packaging are ordered —
+  cheap now, expensive after launch.
+- Buy the `.com` if it is clear; also park the `.com.gh`.
 - Set up a Sanity account and a Vercel account with the same email before your first build session.

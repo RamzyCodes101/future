@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   FASHIONOVA — design tokens
+   A premium palette: near-black and ivory do the structural work, champagne
+   appears only as hairlines and hover states, and the saturated tones (jade,
+   oxblood) are reserved for full-bleed editorial surfaces. Colour arrives
+   through the photography, not through painted UI blocks.
+   =========================================================================== */
+@theme {
+  --color-noir: #0b0b0c;
+  --color-ink: #16161a;
+  --color-graphite: #3a3a40;
+  --color-taupe: #9a8b79;
+  --color-mist: #dcd4c7;
+  --color-bone: #efeae1;
+  --color-ivory: #f7f4ee;
+  --color-champagne: #c6a664;
+  --color-champagne-dim: #8f7743;
+  --color-jade: #12352e;
+  --color-oxblood: #4a1c1b;
+
+  --font-display: "PP Editorial New", "Reckless Neue", "Canela",
+    ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Suisse Intl", "Neue Haas Grotesk", ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --page: var(--color-ivory);
+    --page-fg: var(--color-ink);
+  }
+
+  * {
+    min-width: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--page);
+    color: var(--page-fg);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Lenis owns the scroll; without this the native scrollbar fights it. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--color-champagne);
+    color: var(--color-noir);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-champagne);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.035em;
+    line-height: 0.88;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img {
+    max-width: 100%;
+    display: block;
+  }
+}
+
+@layer utilities {
+  /* Editorial display scale — deliberately aggressive. */
+  .text-display {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 12vw, 13rem);
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+  }
+  .text-hero {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 8vw, 8rem);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+  }
+  .text-section {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+  }
+
+  /* Small-caps UI label — the workhorse for nav, prices and eyebrows. */
+  .label {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .label-lg {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 500;
+  }
+
+  .rule {
+    border-color: color-mix(in oklab, var(--color-taupe) 35%, transparent);
+  }
+
+  /* Page gutter, consistent everywhere so the grid reads as intentional. */
+  .gutter {
+    padding-inline: clamp(1.25rem, 5vw, 5rem);
+  }
+
+  /* Masked reveal container for SplitText lines/chars. */
+  .clip-mask {
+    overflow: hidden;
+    display: block;
+  }
+
+  /* A hairline champagne underline that draws in on hover. */
+  .link-underline {
+    position: relative;
+    display: inline-block;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+  .link-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .grain::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: multiply;
+    background-image: var(--grain-url);
+    background-size: 180px;
+  }
+}
+
+/* Anything tagged for GSAP entry starts hidden, so there is no flash of
+   un-animated content before the timeline attaches. Removed by the provider
+   when reduced motion is requested. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-anim="fade"],
+  [data-anim="up"],
+  [data-anim="down"],
+  [data-anim="left"],
+  [data-anim="right"],
+  [data-anim="scale"] {
+    opacity: 0;
+  }
+}
