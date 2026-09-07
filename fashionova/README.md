@@ -21,8 +21,34 @@ sample data for your own and turns the checkout on.
 ```bash
 npm run build        # production build
 npm run typecheck    # TypeScript, no emit
+npm test             # the browser suite (builds and boots its own server)
+npm run test:a11y    # just the accessibility checks
 npm run seed:images  # regenerate the placeholder imagery
+npm run seed:icons   # regenerate the favicon, touch icon and OG card
 ```
+
+## Tests
+
+`npm test` runs Playwright against a real production build, at desktop and
+Pixel 7 widths, and covers:
+
+- **Accessibility** — every page against WCAG 2.1 A and AA via axe-core. This
+  suite exists because those claims were once asserted rather than measured,
+  and when finally measured, seven pages failed on colour contrast. The
+  palette is easy to regress.
+- **Buying something** — add to bag, checkout, order confirmation, and that a
+  confirmed order empties the bag while an abandoned one does not.
+- **The server-side guards** — a tampered line price is recomputed from the
+  catalogue, a malformed payload is rejected, an inactive product cannot be
+  bought, and a forged Paystack signature is refused.
+- **Layout and motion** — no page scrolls sideways, the mobile menu opens, and
+  under `prefers-reduced-motion` nothing is left invisible (the failure mode
+  there is a blank page, not a missing flourish).
+- **The forms** — including that a failed submission keeps what was typed.
+
+In a sandbox with a preinstalled browser, point at it with
+`PLAYWRIGHT_CHROMIUM_PATH`. To run against an already-running server, set
+`BASE_URL` and the suite will skip starting its own.
 
 ---
 

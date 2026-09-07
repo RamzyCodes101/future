@@ -8,7 +8,9 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "seed:images": "node scripts/generate-placeholders.mjs",
-    "seed:icons": "node scripts/generate-icons.mjs"
+    "seed:icons": "node scripts/generate-icons.mjs",
+    "test": "playwright test",
+    "test:a11y": "playwright test accessibility"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.6",
@@ -30,6 +32,8 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.16",
     "@types/node": "^22.18.11",
     "@types/react": "^19.2.2",
