@@ -109,7 +109,7 @@ export function LookbookViewer({ entries }: { entries: LookbookEntry[] }) {
               >
                 <p className="label text-champagne">{entry.title}</p>
                 {entry.credit ? (
-                  <p className="mt-1.5 text-xs text-mist/60">{entry.credit}</p>
+                  <p className="mt-1.5 text-xs text-mist/75">{entry.credit}</p>
                 ) : null}
               </div>
             ))}

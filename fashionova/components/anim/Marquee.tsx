@@ -50,7 +50,15 @@ export function Marquee({
   }, [])
 
   return (
-    <div ref={scope} className={`relative overflow-hidden ${className}`} aria-hidden="true">
+    <div
+      ref={scope}
+      className={`relative overflow-hidden ${className}`}
+      aria-hidden="true"
+      /* A repeated ghost wordmark carrying no information — WCAG 1.4.3 exempts
+         pure decoration from the contrast minimum. Tagged so the accessibility
+         audit excludes it deliberately rather than silently. */
+      data-decorative="true"
+    >
       <div data-track className="flex w-max whitespace-nowrap will-change-transform">
         {Array.from({ length: repeat * 2 }, (_, i) => (
           <span key={i} className="text-hero px-6 shrink-0">

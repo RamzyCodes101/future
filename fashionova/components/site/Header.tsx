@@ -99,7 +99,11 @@ export function Header({ announcement }: { announcement?: string }) {
                   href={link.href}
                   aria-current={pathname.startsWith(link.href) ? 'page' : undefined}
                   className={`label link-underline ${
-                    pathname.startsWith(link.href) ? 'text-champagne' : ''
+                    pathname.startsWith(link.href)
+                      ? onDark
+                        ? 'text-champagne'
+                        : 'text-champagne-dim'
+                      : ''
                   }`}
                 >
                   {link.label}

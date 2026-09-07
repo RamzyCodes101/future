@@ -19,7 +19,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="label mb-5 text-champagne-dim">Shop</h3>
+          <h3 className="label mb-5 text-champagne">Shop</h3>
           <ul className="space-y-2.5 text-mist">
             <li><Link href="/shop" className="link-underline">All pieces</Link></li>
             <li><Link href="/collections/harmattan" className="link-underline">Harmattan SS26</Link></li>
@@ -29,7 +29,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="label mb-5 text-champagne-dim">Atelier</h3>
+          <h3 className="label mb-5 text-champagne">Atelier</h3>
           <ul className="space-y-2.5 text-mist">
             <li>{settings.studioAddress}</li>
             <li>
@@ -62,8 +62,8 @@ export function Footer({ settings }: { settings: SiteSettings }) {
       </div>
 
       <div className="gutter flex flex-wrap items-center justify-between gap-4 border-t rule py-7">
-        <p className="label text-mist/50">© {year} Fashionova</p>
-        <p className="label text-mist/50">Prices in Ghana cedis · Cards & Mobile Money</p>
+        <p className="label text-mist/70">© {year} Fashionova</p>
+        <p className="label text-mist/70">Prices in Ghana cedis · Cards & Mobile Money</p>
       </div>
     </footer>
   )

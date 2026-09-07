@@ -11,12 +11,17 @@
   --color-noir: #0b0b0c;
   --color-ink: #16161a;
   --color-graphite: #3a3a40;
-  --color-taupe: #9a8b79;
+  /* Darkened from #9a8b79 so small text clears 4.5:1 on ivory — it measured
+     3.01:1, which fails WCAG AA at the 11px this token is mostly used at. */
+  --color-taupe: #786a59;
   --color-mist: #dcd4c7;
   --color-bone: #efeae1;
   --color-ivory: #f7f4ee;
+  /* Champagne is for dark grounds only: on ivory it is 2.11:1. Anything on a
+     light surface uses champagne-dim, darkened from #8f7743 (3.91:1) to clear
+     4.5:1. */
   --color-champagne: #c6a664;
-  --color-champagne-dim: #8f7743;
+  --color-champagne-dim: #7a6535;
   --color-jade: #12352e;
   --color-oxblood: #4a1c1b;
 
@@ -133,7 +138,10 @@
   }
 
   .rule {
-    border-color: color-mix(in oklab, var(--color-taupe) 35%, transparent);
+    /* Mixed down to hold the same visual weight as before the taupe token was
+       darkened for contrast. Dividers are non-text, so they carry no ratio
+       requirement of their own. */
+    border-color: color-mix(in oklab, var(--color-taupe) 26%, transparent);
   }
 
   /* Page gutter, consistent everywhere so the grid reads as intentional. */

@@ -23,7 +23,7 @@ export function NewsletterForm() {
           defaultValue={state.values?.email ?? ''}
           placeholder="Email address"
           aria-describedby="newsletter-status"
-          className="w-full bg-transparent text-ivory placeholder:text-mist/50 focus:outline-none"
+          className="w-full bg-transparent text-ivory placeholder:text-mist/70 focus:outline-none"
         />
         <button type="submit" disabled={pending} className="label shrink-0 text-champagne disabled:opacity-50">
           {pending ? '…' : 'Join'}
@@ -34,7 +34,7 @@ export function NewsletterForm() {
         id="newsletter-status"
         role="status"
         className={`mt-3 text-xs ${
-          state.status === 'error' ? 'text-champagne' : 'text-mist/50'
+          state.status === 'error' ? 'text-champagne' : 'text-mist/70'
         }`}
       >
         {state.status === 'idle'
