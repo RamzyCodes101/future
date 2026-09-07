@@ -8,7 +8,7 @@ import { Cursor } from '@/components/site/Cursor'
 import { ScrollProgress } from '@/components/site/ScrollProgress'
 import { PageTransition } from '@/components/site/PageTransition'
 import { WhatsAppButton } from '@/components/site/WhatsAppButton'
-import { CartDrawer } from '@/components/shop/CartDrawer'
+import { CartMount } from '@/components/shop/CartMount'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <main id="main">{children}</main>
           <Footer settings={settings} />
           <WhatsAppButton settings={settings} />
-          <CartDrawer freeShippingThreshold={settings.freeShippingThreshold} />
+          <CartMount freeShippingThreshold={settings.freeShippingThreshold} />
         </SmoothScroll>
       </body>
     </html>

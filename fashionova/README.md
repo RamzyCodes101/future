@@ -217,6 +217,23 @@ Constantia on Windows, Noto Serif on Android — rather than dropping straight
 to Georgia. Most visitors get something close to the intended voice without
 downloading a byte.
 
+## Performance
+
+Measured on a simulated mid-range Android over Slow 4G with 4x CPU
+throttling, against a production build:
+
+| Route | LCP | JS |
+|---|---|---|
+| `/` | ~0.7s | 463KB (includes the WebGL chunk, which loads after first paint) |
+| `/shop` | ~0.7s | 234KB |
+| `/shop/[slug]` | ~0.6s | 234KB |
+
+Two things keep the core bundle down, and both are easy to undo by accident:
+the WebGL scenes are gated behind a capability check and only fetched when
+the device looks up to it, and the bag drawer — the one component using
+Motion — is deferred until it is first opened, so pages nobody shops from
+never download an animation library.
+
 ## Accessibility and motion
 
 Everything respects `prefers-reduced-motion`: no smooth scroll, no pinning, no
