@@ -7,6 +7,7 @@ import { AddToBag } from '@/components/shop/AddToBag'
 import { ProductCard } from '@/components/shop/ProductCard'
 import { SplitHeading } from '@/components/anim/SplitHeading'
 import { ProductViewer } from '@/components/three/ProductViewer'
+import { SizeGuide } from '@/components/shop/SizeGuide'
 import { formatPrice } from '@/lib/money'
 
 type Params = { params: Promise<{ slug: string }> }
@@ -117,11 +118,7 @@ export default async function ProductPage({ params }: Params) {
             </div>
             <div data-anim="up">
               <h2 className="label mb-3 text-champagne-dim">Sizing</h2>
-              <p className="text-graphite">
-                Sizes run UK/EU standard. Chest and waist measurements in centimetres are on the
-                size chart — message us on WhatsApp for a fitting and we will cut to your
-                measurements at no extra cost.
-              </p>
+              <SizeGuide />
             </div>
             <div data-anim="up">
               <h2 className="label mb-3 text-champagne-dim">Delivery</h2>

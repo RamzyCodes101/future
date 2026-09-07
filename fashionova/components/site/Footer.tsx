@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { SiteSettings } from '@/lib/types'
 import { Marquee } from '@/components/anim/Marquee'
+import { NewsletterForm } from '@/components/site/NewsletterForm'
 
 export function Footer({ settings }: { settings: SiteSettings }) {
   const year = new Date().getFullYear()
@@ -14,24 +15,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           <h2 className="text-section mb-6 max-w-sm">
             Made in Accra, worn everywhere.
           </h2>
-          <form className="flex max-w-sm items-center gap-4 border-b rule pb-3">
-            <label htmlFor="newsletter" className="sr-only">
-              Email address
-            </label>
-            <input
-              id="newsletter"
-              type="email"
-              required
-              placeholder="Email address"
-              className="w-full bg-transparent text-ivory placeholder:text-mist/50 focus:outline-none"
-            />
-            <button type="submit" className="label shrink-0 text-champagne">
-              Join
-            </button>
-          </form>
-          <p className="mt-3 text-xs text-mist/50">
-            New collections and atelier notes. No more than once a month.
-          </p>
+          <NewsletterForm />
         </div>
 
         <div>

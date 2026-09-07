@@ -127,6 +127,7 @@ Graph images depend on it.
 
 ```
 app/(site)/          The public website
+app/(site)/actions.ts  Newsletter and contact form server actions
 app/(studio)/studio  Sanity Studio, on your own domain
 app/api/             checkout · Paystack webhook · Sanity revalidation
 components/anim/     Scroll set pieces (split headings, rail, marquee, lookbook)
@@ -134,9 +135,11 @@ components/three/    The three WebGL scenes
 components/shop/     Grid, card, gallery, bag, checkout
 components/site/     Header, footer, hero, cursor, transitions
 lib/catalogue.ts     The only place the app reads content from
+lib/email.ts         Resend transport for order, contact and signup mail
+lib/sizing.ts        The size chart, in centimetres
 lib/seed.ts          The sample collection used before Sanity is connected
 sanity/schemas/      What the Studio's forms are made of
-scripts/             Placeholder image generator
+scripts/             Placeholder image and brand mark generators
 ```
 
 ### The one rule worth knowing
@@ -162,7 +165,9 @@ the scroll choreography and the colour relationships could be judged before a
 shoot happens. **They are not meant to survive to launch.**
 
 Replace them by uploading real photographs in the Studio; nothing references
-the placeholder files once products come from Sanity.
+the placeholder files once products come from Sanity. Before the CMS exists,
+`public/img/photography/` is a drop-in shortcut — its README names the slot for
+each photograph.
 
 Photography is most of whether this reads as a premium house or a template.
 Budget for one proper editorial shoot in Accra before launch. No amount of GSAP
@@ -177,6 +182,23 @@ and add an `@font-face` block — the type scale is already built around them.
 Free stand-ins that hold the same character: Instrument Serif and Inter Tight.
 
 ---
+
+## Email
+
+Order confirmations, contact enquiries and newsletter signups go out through
+Resend. Add `RESEND_API_KEY` and `EMAIL_FROM` (see `.env.example`) and verify
+your sending domain in the Resend dashboard.
+
+Without a key the forms still succeed and the message is written to the server
+log instead of being sent — so the whole flow is reviewable before an email
+account exists, without pretending mail was delivered.
+
+One detail worth keeping if you touch the forms: React resets an uncontrolled
+form once its action completes, so a failed validation would otherwise wipe
+everything the visitor typed — and the browser's own `required` check then
+blocks them from resubmitting the emptied fields. The actions echo the
+submitted values back in `FormState.values`, and the inputs read them as
+`defaultValue`.
 
 ## Accessibility and motion
 

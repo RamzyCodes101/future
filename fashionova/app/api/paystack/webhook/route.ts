@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { client } from '@/lib/sanity'
-import { fromPesewas } from '@/lib/money'
+import { formatPrice, fromPesewas } from '@/lib/money'
+import { emailLayout, sendEmail } from '@/lib/email'
 
 /**
  * Paystack's server-to-server notification.
@@ -76,6 +77,57 @@ export async function POST(request: Request) {
     }
   } else {
     console.info('[paystack] paid order (no CMS configured):', data.reference)
+  }
+
+  // Confirmation to the customer. A failure here must not fail the webhook —
+  // the money has already moved, and Paystack would retry a non-2xx forever.
+  const customerEmail = data.customer?.email
+  if (customerEmail) {
+    const lines = (metadata.lines ?? []) as Array<{
+      name?: string
+      size?: string
+      colour?: string
+      quantity?: number
+      price?: number
+    }>
+
+    const rows = lines
+      .map(
+        (line) => `<tr>
+          <td style="padding:8px 0;font-size:14px">${line.name ?? ''}<br>
+            <span style="color:#9a8b79;font-size:12px">${line.colour ?? ''} · ${line.size ?? ''} · ×${line.quantity ?? 1}</span>
+          </td>
+          <td style="padding:8px 0;font-size:14px;text-align:right;white-space:nowrap">${formatPrice((line.price ?? 0) * (line.quantity ?? 1))}</td>
+        </tr>`
+      )
+      .join('')
+
+    const madeToOrder = lines.some((line) => String(line.name ?? '').length > 0)
+
+    await sendEmail({
+      to: customerEmail,
+      subject: `Your Fashionova order — ${data.reference}`,
+      html: emailLayout(
+        'Thank you.',
+        `<p style="margin:0 0 24px;font-size:15px;line-height:1.6">
+           Your order is with the atelier. We will message you on WhatsApp when it ships.
+           ${madeToOrder ? 'Made-to-order pieces are dispatched in 7–14 days.' : ''}
+         </p>
+         <table width="100%" cellpadding="0" cellspacing="0"
+                style="border-top:1px solid #dcd4c7;border-bottom:1px solid #dcd4c7">
+           ${rows}
+         </table>
+         <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">
+           <tr>
+             <td style="font-size:15px"><strong>Total</strong></td>
+             <td style="font-size:15px;text-align:right"><strong>${formatPrice(fromPesewas(data.amount))}</strong></td>
+           </tr>
+         </table>
+         <p style="margin:28px 0 0;font-size:12px;color:#9a8b79">
+           Reference ${data.reference} — quote this if you get in touch.
+         </p>`
+      ),
+    })
   }
 
   return NextResponse.json({ received: true })

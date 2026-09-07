@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { getSiteSettings } from '@/lib/catalogue'
 import { SplitHeading } from '@/components/anim/SplitHeading'
+import { ContactForm } from '@/components/site/ContactForm'
 
 export const metadata: Metadata = {
   title: 'Contact',
@@ -40,44 +41,7 @@ export default async function ContactPage() {
         </address>
       </div>
 
-      <form className="space-y-7" data-anim="right">
-        {[
-          { id: 'name', label: 'Your name', type: 'text' },
-          { id: 'email', label: 'Email', type: 'email' },
-          { id: 'phone', label: 'Phone (optional)', type: 'tel' },
-        ].map((field) => (
-          <div key={field.id}>
-            <label htmlFor={field.id} className="label mb-2.5 block text-taupe">
-              {field.label}
-            </label>
-            <input
-              id={field.id}
-              name={field.id}
-              type={field.type}
-              required={field.id !== 'phone'}
-              className="w-full border-b rule bg-transparent pb-2.5 focus:border-ink focus:outline-none"
-            />
-          </div>
-        ))}
-        <div>
-          <label htmlFor="message" className="label mb-2.5 block text-taupe">
-            Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows={5}
-            required
-            className="w-full border-b rule bg-transparent pb-2.5 focus:border-ink focus:outline-none"
-          />
-        </div>
-        <button type="submit" className="label w-full bg-noir py-4 text-ivory transition-colors hover:bg-jade">
-          Send
-        </button>
-        <p className="text-xs text-taupe">
-          Connect a form handler (Resend, Formspree) before launch — this form is not wired up yet.
-        </p>
-      </form>
+      <ContactForm />
     </div>
   )
 }

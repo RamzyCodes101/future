@@ -43,7 +43,14 @@ export function LookbookViewer({ entries }: { entries: LookbookEntry[] }) {
   const scope = useGsap<HTMLDivElement>(({ scope: el }) => {
     if (!webgl) return
     const captions = gsap.utils.toArray<HTMLElement>('[data-caption]', el)
+
+    // The first caption is visible on arrival — its trigger sits exactly at
+    // scroll zero, so waiting for it to fire leaves the opening screen
+    // captionless.
+    if (captions[0]) gsap.set(captions[0], { autoAlpha: 1, y: 0 })
+
     captions.forEach((caption, i) => {
+      if (i === 0) return
       gsap.fromTo(
         caption,
         { autoAlpha: 0, y: 24 },
