@@ -25,14 +25,59 @@
   --color-jade: #12352e;
   --color-oxblood: #4a1c1b;
 
-  --font-display: "PP Editorial New", "Reckless Neue", "Canela",
-    ui-serif, Georgia, "Times New Roman", serif;
-  --font-sans: "Suisse Intl", "Neue Haas Grotesk", ui-sans-serif,
-    system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Display: the licensed faces first, then the best high-contrast serif
+     actually installed on each platform, then generics. Didot and Bodoni on
+     Apple devices and Constantia on Windows are far closer to the intended
+     editorial voice than Georgia, and land for most visitors without a single
+     byte downloaded. */
+  --font-display: "Fashionova Display", "PP Editorial New", "Reckless Neue",
+    "Canela", Didot, "Bodoni 72", "Playfair Display", Baskerville,
+    "Hoefler Text", Constantia, Cambria, Georgia, ui-serif,
+    "Times New Roman", serif;
+
+  /* UI: the licensed grotesque, then each platform's own — which is already
+     the best-hinted sans on that device. */
+  --font-sans: "Fashionova Sans", "Suisse Intl", "Neue Haas Grotesk Display",
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text",
+    "Segoe UI", Roboto, "Helvetica Neue", ui-sans-serif, system-ui,
+    Helvetica, Arial, sans-serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }
+
+/* ---------------------------------------------------------------------------
+   Licensed typefaces
+   ---------------------------------------------------------------------------
+   The design is drawn for PP Editorial New (display) and Suisse Intl (UI).
+   Both are commercial and are not distributed with this repository.
+
+   To use them: licence the faces, drop the .woff2 files into public/fonts/
+   (see the README there for exact filenames), and uncomment the block below.
+   Nothing else changes — "Fashionova Display" and "Fashionova Sans" already
+   sit at the front of the stacks above, so the whole site switches over.
+
+   The size-adjust values keep the fallback's metrics close to the real face,
+   so swapping does not reflow the page.
+
+@font-face {
+  font-family: "Fashionova Display";
+  src: url("/fonts/display.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+}
+
+@font-face {
+  font-family: "Fashionova Sans";
+  src: url("/fonts/sans.woff2") format("woff2");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+}
+--------------------------------------------------------------------------- */
 
 @layer base {
   :root {
@@ -48,6 +93,9 @@
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Never let the browser fake a weight or an italic the face does not have
+       — a synthesised bold on a display serif looks like a mistake. */
+    font-synthesis: none;
   }
 
   body {

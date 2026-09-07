@@ -201,30 +201,21 @@ rescues weak images.
 
 ## The typefaces
 
-`app/(site)/globals.css` asks for **PP Editorial New** (display) and **Suisse
-Intl** (UI), falling back to system serif and sans. Both are commercial and are
-not bundled here. Licence them, drop the `.woff2` files into `public/fonts/`,
-and add an `@font-face` block — the type scale is already built around them.
-Free stand-ins that hold the same character: Instrument Serif and Inter Tight.
+The design is drawn for **PP Editorial New** (display) and **Suisse Intl**
+(UI). Both are commercial and are not bundled here.
 
----
+To install them: licence the faces, drop `display.woff2` and `sans.woff2` into
+`public/fonts/`, and uncomment the `@font-face` block in
+`app/(site)/globals.css`. Nothing else changes — those family names already
+sit at the front of the stacks. `public/fonts/README.md` has the detail,
+including free stand-ins (Instrument Serif, Inter Tight) if the licence has to
+wait.
 
-## Email
-
-Order confirmations, contact enquiries and newsletter signups go out through
-Resend. Add `RESEND_API_KEY` and `EMAIL_FROM` (see `.env.example`) and verify
-your sending domain in the Resend dashboard.
-
-Without a key the forms still succeed and the message is written to the server
-log instead of being sent — so the whole flow is reviewable before an email
-account exists, without pretending mail was delivered.
-
-One detail worth keeping if you touch the forms: React resets an uncontrolled
-form once its action completes, so a failed validation would otherwise wipe
-everything the visitor typed — and the browser's own `required` check then
-blocks them from resubmitting the emptied fields. The actions echo the
-submitted values back in `FormState.values`, and the inputs read them as
-`defaultValue`.
+Until then the stacks fall through to the best high-contrast serif actually
+installed on the visitor's device — Didot or Bodoni 72 on Apple platforms,
+Constantia on Windows, Noto Serif on Android — rather than dropping straight
+to Georgia. Most visitors get something close to the intended voice without
+downloading a byte.
 
 ## Accessibility and motion
 
